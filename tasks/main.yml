@@ -1,0 +1,13 @@
+---
+- include: groups.yml
+
+- include: users.yml
+
+- include: prepare_installation.yml
+  when: oracle_gi_homes is defined or oracle_db_homes is defined
+
+- include: install_gi.yml
+  when: oracle_gi_homes is defined
+
+- include: install_db.yml
+  when: oracle_db_homes is defined

@@ -1,0 +1,12 @@
+---
+- include: hostname.yml
+
+- include: kernel.yml
+
+- include: packages.yml
+
+- include: selinux.yml
+
+- include: inventory.yml
+
+- include: directories.yml

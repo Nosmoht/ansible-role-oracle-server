@@ -1,0 +1,17 @@
+---
+- name: Setting Grub fact on RHEL 7
+  set_fact: grub_config_file=/boot/grub2/grub.cfg
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version > "6"
+
+- name: Setting Grub fact on RHEL 5/6
+  set_fact: grub_config_file=/boot/grub/grub.conf
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version in ["5", "6"]
+
+- name: Setting Disk I/O Scheduler to deadline
+  lineinfile: dest="{{ grub_config_file }}" backup=True backrefs=True state=present regexp='(^\s+(kernel|linux16)(\s+(?!elevator=deadline)[\w=/\-\.]+)*)\s*$' line='\1 elevator=deadline'
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version > 5
+
+- name: Disabling Transparent Hugepages
+  lineinfile: dest="{{ grub_config_file }}" backup=True backrefs=True state=present regexp='(^\s+(kernel|linux16)(\s+(?!transparent_hugepages=never)[\w=/\-\.]+)*)\s*$' line='\1 transparent_hugepages=never'
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version > 5
+  

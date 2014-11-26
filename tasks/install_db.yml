@@ -1,0 +1,91 @@
+---
+- include: sysctl.yml
+
+- include: limits.yml
+
+- debug: var=oracle_db_homes
+  tags: debug
+
+- debug: var=oracle_databases
+  tags: debug
+
+- name: Ensure unpack directory exist
+  file: 
+    name: "{{ item.unpack_directory }}"
+    state: directory 
+#    owner: "{{ oracle_db_owner_user_name }}" 
+#    group: "{{ oracle_inventory_group_name }}"
+  with_items: oracle_db_homes
+  tags: test
+
+- name: Unpacking Installation files
+  shell: unzip -u -o {{ item.0.installation_files_directory }}/{{ item.1 }} -d {{ item.0.unpack_directory }}
+  with_subelements: 
+  - oracle_db_homes
+  - installation_files
+
+- include: responsefile.yml
+
+- name: Running Oracle Universal Installer Using a Response File
+  shell: "{{ item.unpack_directory }}/database/runInstaller -silent -responseFile {{ item.response_file }} -waitforcompletion -force" #-ignoreSysPrereqs
+  sudo: yes
+  sudo_user: "{{ oracle_db_owner_user_name }}"
+  register: oracle_installation_results
+  failed_when: oracle_installation_results.stdout.find('root.sh') == -1 
+  with_items: oracle_db_homes
+
+- name: Executing orainstRoot.sh as root
+  shell: "{{ oracle_inventory_directory }}/orainstRoot.sh"
+  sudo: yes
+  sudo_user: root
+  when: item.stdout.find('orainstRoot.sh') != -1 
+  with_items: oracle_installation_results.results
+
+- name: Executing root.sh as root
+  shell: "{{ item.0.path }}/root.sh"
+  sudo: yes
+  sudo_user: root
+  when: item.1.stdout.find('root.sh') != -1
+  with_together: 
+  - oracle_db_homes
+  - oracle_installation_results.results
+
+- name: Unzipping Oracle OPatch 
+  shell: "unzip -u -o {{ item.installation_files_directory }}/{{ item.opatch_patch_file }} -d {{ item.path }}"
+  sudo: yes
+  sudo_user: "{{ oracle_db_owner_user_name }}"
+  register: oracle_opatch_unpack_results
+  changed_when: oracle_opatch_unpack_results.stdout.find('inflating') != 1
+  when: item.opatch_patch_file is defined
+  with_items: oracle_db_homes
+  tags: patch
+
+- name: Running Net Configuration Assistant Using a Response File
+  shell: "{{ item.path }}/bin/netca -silent -responsefile {{ item.path }}/assistants/netca/netca.rsp"
+  sudo: yes
+  sudo_user: "{{ oracle_db_owner_user_name }}"
+  with_items: oracle_db_homes
+  tags: netca
+  
+- name: Installing Oracle Database
+  shell: "{{ item.0.path }}/bin/dbca -silent -createDatabase -templateName General_Purpose.dbc -gdbName {{ item.1.db_name }} -sid {{ item.1.db_name }} -sysPassword {{ item.1.syspassword }} -systemPassword {{ item.1.systempassword }} -dbsnmpPassword {{ item.1.dbsnmppassword }} -emConfiguration LOCAL -storageType FS -datafileJarLocation {{ item.0.path }}/assistants/dbca/templates -characterset {{ item.1.characterset }} -obfuscatedPasswords false -sampleSchema false"
+  sudo: yes
+  sudo_user: "{{ oracle_db_owner_user_name }}"
+  when: item.0.name == item.1.oracle_home
+  with_nested: 
+  - oracle_db_homes
+  - oracle_databases
+  tags: dbca
+
+- name: Creating environment file
+  template:
+    src: set_env_DB.j2
+    dest: "{{ oracle_db_owner_user_home }}/.set_env_{{ item.1.db_name }}" 
+    group: "{{ oracle_inventory_group_name }}"
+    owner: "{{ oracle_db_owner_user_name }}"
+    mode: 0664
+  when: item.0.name == item.1.oracle_home
+  with_nested:
+  - oracle_db_homes
+  - oracle_databases
+  tags: setenv

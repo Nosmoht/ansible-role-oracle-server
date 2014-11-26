@@ -1,0 +1,7 @@
+---
+- name: Ensuring hostname is resolvable
+  lineinfile:
+    dest: /etc/hosts
+    state: present
+    line: "127.0.0.1 {{ item }}"
+  with_items: ansible_hostname

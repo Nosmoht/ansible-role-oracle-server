@@ -1,0 +1,13 @@
+#!/bin/bash
+
+export ORACLE_BASE={{ oracle_db_oracle_base }}
+export ORACLE_HOME={{ item.0.path }}
+export ORACLE_SID={{ item.1.db_name }}
+export PATH=${ORACLE_HOME}/bin:${ORACLE_HOME}/OPatch:${PATH}
+export LD_LIBRARY_PATH=${ORACLE_HOME}/lib:${ORACLE_HOME}/lib32
+export NLS_DATE_FORMAT="YYYY-MM-DD HH24:MI:SS"
+
+alias esid='echo ${ORACLE_SID}'
+alias sql='sqlplus / as sysdba'
+alias smon='ps aux | grep smon'
+alias pmon='ps aux | grep pmon'

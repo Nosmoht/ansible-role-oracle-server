@@ -1,0 +1,24 @@
+---
+- name: Creating Oracle Grid Infrastructure owner
+  user: name={{ oracle_gi_owner_user_name }} uid={{ oracle_gi_owner_user_id }} state=present group={{ oracle_inventory_group_name }} groups={{  oracle_gi_osdba_group_name }},{{ oracle_gi_osoper_group_name }},{{ oracle_gi_osasm_group_name }},{{ oracle_db_osdba_group_name }}
+  when: oracle_gi_homes is defined
+
+- name: Setting Oracle Database Owner groups (no ASM + no DB)
+  set_fact: oracle_db_owner_groups="{{ oracle_inventory_group_name }}"
+  when: not oracle_gi_homes is defined and not oracle_db_homes is defined
+
+- name: Setting Oracle Database Owner groups (no ASM + DB)
+  set_fact: oracle_db_owner_groups="{{ oracle_db_osdba_group_name }},{{ oracle_db_osoper_group_name }},{{ oracle_db_osbackupdba_group_name}},{{ oracle_db_osdgdba_group_name}},{{ oracle_db_oskmdba_group_name}}"
+  when: not oracle_gi_homes is defined and oracle_db_homes is defined
+
+- name: Setting Oracle Database Owner groups (ASM + DB)
+  set_fact: oracle_db_owner_groups="{{ oracle_gi_osdba_group_name }},{{ oracle_db_osdba_group_name }},{{ oracle_db_osoper_group_name }},{{ oracle_db_osbackupdba_group_name}},{{ oracle_db_osdgdba_group_name}},{{ oracle_db_oskmdba_group_name}}"
+  when: oracle_gi_homes is defined and oracle_db_homes is defined
+
+- name: Creating Oracle Database owner
+  user: name={{ oracle_db_owner_user_name }} uid={{ oracle_db_owner_user_id }} state=present group={{ oracle_inventory_group_name }} groups={{ oracle_db_owner_groups }} shell={{ oracle_db_owner_user_shell }} home={{ oracle_db_owner_user_home }}
+
+- name: Configuring umask
+  lineinfile: dest={{ oracle_db_owner_user_home }}/{{ item.file }} regexp="^#?umask" line="umask 022" state=present
+  when: oracle_db_owner_user_shell == "{{ item.path }}"
+  with_items: oracle_shells
