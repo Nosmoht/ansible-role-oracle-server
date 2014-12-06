@@ -1,0 +1,25 @@
+---
+- name: Ensuring that Oracle Listener is running
+  sudo: true
+  sudo_user: '{{ oracle_db_owner_user_name }}'
+  oracle_listener:
+    name: '{{ item.1.name }}'
+    port: '{{ item.1.port }}'
+    protocol: '{{ item.1.protocol }}'
+    oracle_home: '{{ item.0.path }}'
+    state: running
+  when: item.0.name == item.1.oracle_home
+  with_nested:
+  - oracle_db_homes
+  - oracle_listeners
+  tags: test
+
+- name: Running Net Configuration Assistant Using a Response File
+  shell: '{{ item.0.path }}/bin/netca -silent -responsefile {{ item.0.path }}/assistants/netca/netca.rsp'
+  register: oracle_netca_output
+  sudo: true
+  sudo_user: '{{ oracle_db_owner_user_name }}'
+  when: item.0.name == item.1.oracle_home
+  with_nested:
+  - oracle_db_homes
+  - oracle_listeners

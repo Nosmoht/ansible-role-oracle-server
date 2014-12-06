@@ -31,10 +31,10 @@
     - name: DECLINE_SECURITY_UPDATES
       value: true
 
-- name: Configure ORACLE_HOME
+- name: Configure ORACLE_HOME in response file
   lineinfile: dest={{ item.response_file }} regexp="^(ORACLE_HOME)=" line="\1={{ item.path }}" backrefs=yes state=present
   with_items: oracle_db_homes
 
-- name: Configure oracle.install.db.InstallEdition
+- name: Configure oracle.install.db.InstallEdition in response file
   lineinfile: dest={{ item.response_file }} regexp="^(oracle.install.db.InstallEdition)=" line="\1={{ item.edition }}" backrefs=yes state=present
   with_items: oracle_db_homes

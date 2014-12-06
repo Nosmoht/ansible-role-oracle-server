@@ -2,10 +2,15 @@
 - include: hostname.yml
 
 - include: kernel.yml
+  when: ansible_os_family == "RedHat"
+  tags: 
+  - kernel
 
 - include: packages.yml
+  tags: packages
 
 - include: selinux.yml
+  tags: selinux
 
 - include: inventory.yml
 
