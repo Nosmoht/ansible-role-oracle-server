@@ -1,0 +1,56 @@
+#!/usr/bin/python2 -tt
+# -*- coding: utf-8 -*-
+
+import os
+import cx_Oracle
+
+def get_user_info(module, con, username):
+	cur = con.cursor()
+	cur.prepare('select u.account_status, u.default_tablespace, u.temporary_tablespace from dba_users u where u.username = trim(upper(:username))')
+	cur.execute(None, {'username': username})
+	res = cur.fetchall()
+	cur.close()
+	
+	return True, res  
+
+def ensure(module):
+	changed = False
+	# Set parameters for the user to handle
+	username = module.params['name']
+	password = module.params['password']
+	password_value = module.params['password_value']
+	state = module.params['state']
+
+	if not password and not password_value:
+		module.fail_json(msg="Either 'password' or 'password_value' must be defined")
+
+	# Set parameters to create a connection to target database
+	# dba_username = module.params['dba_username']
+	# dba_password = module.params['dba_password']
+	# tns_name = module.params['tns_name']
+	# Create connection
+	# dsn_tns = cx_Oracle.makedsn('localhost', port, 'sid')
+	# if not dba_username:
+	con = cx_Oracle.connect(mode=cx_Oracle.SYSDBA)
+	rc, res = get_user_info(module, con, username)
+	return changed
+
+def main():
+	module = AnsibleModule(
+	    argument_spec=dict(
+			name=dict(required=True),
+	        state=dict(Default='present', choices=['present', 'absent', 'locked', 'unlocked']),
+	        password=dict(Type='str'),
+	        password_value=dict(Type='str'),
+	        # tns_name=dict(Type='str'),
+	        # dba_username=dict(Type='str'),
+	        # dba_password=dict(Type='str')
+	    ),
+	)
+	
+	changed = ensure(module)
+	module.exit_json(changed=changed, name=module.params['name'])
+
+# import module snippets
+from ansible.module_utils.basic import *
+main()

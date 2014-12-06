@@ -1,0 +1,71 @@
+#!/usr/bin/python2 -tt
+# -*- coding: utf-8 -*-
+
+import os
+
+def listener_is_running(module, name):
+	command = "%s/bin/lsnrctl status %s" % (os.environ['ORACLE_HOME'], name)
+	rc, out, err = module.run_command(command)
+	return (rc == 0)
+
+def start_listener(module, name):
+	command = "%s/bin/lsnrctl start %s" % (os.environ['ORACLE_HOME'], name)
+	rc, out, err = module.run_command(command)
+	if rc != 0:
+		module.fail_json(msg="Error while starting Oracle Listener %s: %s" % (name, out), rc=rc, err=err)
+	return True
+
+def stop_listener(module, name):
+	command = "%s/bin/lsnrctl stop %s" % (os.environ['ORACLE_HOME'], name)
+	rc, out, err = module.run_command(command)
+	if rc != 0:
+		module.fail_json(msg="Error while stopping Oracle Listener %s: %s" % (name, out), rc=rc, err=err)
+	return True
+
+def reload_listener(module, name):
+	command = "%s/bin/lsnrctl reload %s" % (os.environ['ORACLE_HOME'], name)
+	rc, out, err = module.run_command(command)
+	if rc != 0:
+		module.fail_json(msg="Error while reloading Oracle Listener %s: %s" % (name, out), rc=rc, err=err)
+	return True
+
+def ensure(module):
+	changed = False
+	# Set parameters
+	name = module.params['name']
+	port = module.params['port']
+	protocol = module.params['protocol']
+	oracle_home = module.params['oracle_home']
+	tns_admin = module.params['tns_admin']
+	state = module.params['state']
+	# Set environment variables
+	os.environ['ORACLE_HOME'] = oracle_home
+#	if tns_admin:
+#	    os.environ['TNS_ADMIN'] = tns_admin
+	# Execute tasks based on current state
+	if state == 'reloaded':
+		changed = reload_listener(module, name)
+	if  state == 'running' and not listener_is_running(module, name):
+		changed = start_listener(module, name)
+	elif  state == 'stopped' and listener_is_running(module, name):
+		changed = stop_listener(module, name)
+	return changed
+
+def main():
+	module = AnsibleModule(
+	    argument_spec=dict(
+			name=dict(Default='LISTENER'),
+	        state=dict(Default='present', choices=['present', 'absent', 'running', 'stopped', 'reloaded']),
+	        port=dict(Default=1521),
+	        protocol=dict(Default='TCP'),
+	        oracle_home=dict(required=True, Type='str'),
+	        tns_admin=dict(Default='', Type='str')
+	    ),
+	)
+	
+	changed = ensure(module)
+	module.exit_json(changed=changed, name=module.params['name'])
+
+# import module snippets
+from ansible.module_utils.basic import *
+main()
