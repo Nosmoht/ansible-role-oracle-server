@@ -53,7 +53,7 @@ Example Playbook
 
     - hosts: dbservers
       vars:
-        oracle_app_directory: /app/oracle
+        oracle_app_directory: /app
         oracle_db_homes:
         - name: dbhome_1
           version: 12.1.0
