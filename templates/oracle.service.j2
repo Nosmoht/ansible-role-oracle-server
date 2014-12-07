@@ -1,0 +1,19 @@
+[Unit]
+Description=Oracle Database Service {{ item.1.db_name }}
+Conflicts=rescue.target
+After=syslog.target network.target
+After=multi-user.target
+
+[Service]
+Type=forking
+User={{ oracle_db_owner_user_name }}
+TimeoutSec=600
+Environment="ORACLE_BASE={{ oracle_db_oracle_base }} ORACLE_HOME={{ item.0.path }} ORACLE_SID={{ item.1.db_name }}"
+ExecStart={{ item.0.path }}/bin/dbstart {{ item.0.path }}
+ExecStop={{ item.0.path }}/bin/dbshut {{ item.0.path }}
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=oracle
+
+[Install]
+WantedBy=multi-user.target

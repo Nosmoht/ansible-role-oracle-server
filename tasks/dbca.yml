@@ -29,3 +29,42 @@
   with_nested:
   - oracle_db_homes
   - oracle_databases
+
+- name: Create service file to startup Database on boot using SysV
+  template:
+    dest: /etc/init.d/oracle_{{ item.1.db_name }}
+    src: dbora.j2
+    owner: root
+    group: root
+    mode: 0750
+  when: ansible_distribution_major_version in ["5", "6"] and item.0.name == item.1.oracle_home  
+  with_nested:
+  - oracle_db_homes
+  - oracle_databases
+  tags: dbservice
+
+- name: Create service file to startup Database on boot using Systemd
+  template:
+    dest: /etc/systemd/system/oracle_{{ item.1.db_name }}.service  
+    src: oracle.service.j2
+    owner: root
+    group: root
+    mode: 0644
+  when: ansible_distribution_major_version == "7" and item.0.name == item.1.oracle_home
+  with_nested:
+  - oracle_db_homes
+  - oracle_databases
+  tags: dbservice
+
+- name: Reload Systemd
+  shell: systemctl daemon-reload
+  when: ansible_distribution_major_version == "7"
+  tags: dbservice
+
+- name: Ensure Database is running and started on system boot
+  service: 
+    name: oracle_{{ item.db_name }}
+    state: running
+    enabled: True
+  with_items: oracle_databases
+  tags: dbservice
