@@ -8,6 +8,7 @@
   when: oracle_inventory_file_check.stat.exists
   register: oracle_existing_db_homes
   with_items: oracle_db_homes
+  failed_when: oracle_existing_db_homes.rc not in [0, 1]
 
 - name: Ensure unpack directory exist and is owned by Oracle Software owner
   file:
