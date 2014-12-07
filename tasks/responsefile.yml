@@ -2,10 +2,18 @@
 - name: Copy response file
   shell: cp {{ item.unpack_directory}}/database/response/db_install.rsp {{ item.response_file }}
 #  creates: '{{ item.responsefile }}'
-  with_items: oracle_db_homes
+  when: not oracle_inventory_file_check.stat.exists or item.1.stdout == "0"
+  with_together:
+  - oracle_db_homes
+  - oracle_existing_db_homes.results
 
 - name: Setting parameters in response file
-  lineinfile: dest={{ item.0.response_file }} regexp="^({{ item.1.name }})=" line="\1={{ item.1.value }}" backrefs=yes state=present
+  lineinfile: 
+    dest: '{{ item.0.response_file }}'
+    regexp: '^({{ item.1.name }})='
+    line: '\1={{ item.1.value }}'
+    backrefs: yes
+    state: present
   with_nested:
   - oracle_db_homes
   - - name: oracle.install.option
