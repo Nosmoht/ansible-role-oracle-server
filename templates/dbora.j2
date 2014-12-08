@@ -11,7 +11,7 @@
  
 RETVAL=0
 ORA_OWNER="{{ oracle_db_owner_user_name }}"
-ORA_HOME="{{ item.0.path }}"
+ORA_HOME="{{ oracle_db_homes[item.oracle_home].path }}"
  
 # See how we were called.
  

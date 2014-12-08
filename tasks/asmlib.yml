@@ -1,7 +1,11 @@
 ---
 - name: Oracle ASM Support
-  yum: name=oracleasm-support state=installed
+  yum:
+    name: oracleasm-support
+    state: present
 
 - name: Oracle ASMlib
-  yum: name={{ oracle_rpm_directory }}/{{ item }} state=installed
+  yum:
+    name: '{{ oracle_rpm_directory }}/{{ item }}'
+    state: present
   with_items: oracle_oracleasmlib_files

@@ -1,24 +1,21 @@
 ---
 - name: Copying DBCA template file
-  shell: cp {{ item.0.path }}/assistants/dbca/templates/General_Purpose.dbc {{ item.1.dbca_template_file }}
-  when: item.0.name == item.1.oracle_home
-  with_nested:
-  - oracle_db_homes
-  - oracle_databases
+  shell: cp {{ oracle_db_homes[item.oracle_home].path }}/assistants/dbca/templates/General_Purpose.dbc {{ item.dbca_template_file }}
+  with_items: oracle_databases
 
 - name: Modifying Oracle Database template file
-  lineinfile: 
+  lineinfile:
     dest: '{{ item.0.dbca_template_file }}'
-    regexp: '^(\s+)(<option name="{{ item.1.name }}" value=")(.*)("/?>)'
-    line: '\1\2{{ item.1.value }}\4'
-    backrefs: yes
+    regexp: ^(\s+)(<option name="{{ item.1.name }}" value=")(.*)("/?>)
+    line: \1\2{{ item.1.value }}\4
+    backrefs: true
     state: present
   with_subelements:
   - oracle_databases
   - common_attributes
 
 - name: Ensuring template file is owned by Oracle Software owner
-  file: 
+  file:
     dest: '{{ item.dbca_template_file }}'
     owner: '{{ oracle_db_owner_user_name }}'
     group: '{{ oracle_inventory_group_name }}'
@@ -27,54 +24,58 @@
   with_items: oracle_databases
 
 - name: Installing Oracle Database
-  shell: '{{ item.0.path }}/bin/dbca -silent -createDatabase -templateName {{ item.1.dbca_template_file
-    }} -gdbName {{ item.1.db_name }} -sid {{ item.1.db_name }} -sysPassword {{ item.1.syspassword
-    }} -systemPassword {{ item.1.systempassword }} -dbsnmpPassword {{ item.1.dbsnmppassword
-    }} -emConfiguration LOCAL -storageType FS -datafileJarLocation {{ item.0.path
-    }}/assistants/dbca/templates -characterset {{ item.1.characterset }} -obfuscatedPasswords
-    false -sampleSchema false'
+  shell: '{{ oracle_db_homes[item.oracle_home].path }}/bin/dbca -silent -createDatabase
+    -templateName {{ item.dbca_template_file }} -gdbName {{ item.db_name }} -sid {{
+    item.db_name }} -sysPassword {{ item.syspassword }} -systemPassword {{ item.systempassword
+    }} -dbsnmpPassword {{ item.dbsnmppassword }} -emConfiguration LOCAL -storageType
+    FS -datafileJarLocation {{ oracle_db_homes[item.oracle_home].path }}/assistants/dbca/templates -characterset
+    {{ item.characterset }} -obfuscatedPasswords false -sampleSchema false'
   sudo: true
   sudo_user: '{{ oracle_db_owner_user_name }}'
-  when: item.0.name == item.1.oracle_home
-  with_nested:
-  - oracle_db_homes
-  - oracle_databases
+  with_items: oracle_databases
 
 - name: Create service file to startup Database on boot using SysV
   template:
-    dest: /etc/init.d/oracle_{{ item.1.db_name }}
+    dest: /etc/init.d/oracle_{{ item.db_name }}
     src: dbora.j2
     owner: root
     group: root
     mode: '0750'
-  when: ansible_distribution_major_version in ["5", "6"] and item.0.name == item.1.oracle_home  
-  with_nested:
-  - oracle_db_homes
-  - oracle_databases
+  when: ansible_distribution_major_version|int in [5, 6]
+  with_items: oracle_databases
+  register: oracle_database_services
   tags: dbservice
 
 - name: Create service file to startup Database on boot using Systemd
   template:
-    dest: /etc/systemd/system/oracle_{{ item.1.db_name }}.service  
+    dest: /etc/systemd/system/oracle_{{ item.db_name }}.service
     src: oracle.service.j2
     owner: root
     group: root
     mode: '0644'
-  when: ansible_distribution_major_version == "7" and item.0.name == item.1.oracle_home
-  with_nested:
-  - oracle_db_homes
-  - oracle_databases
+  when: ansible_distribution_major_version|int == 7
+  with_items: oracle_databases
+  register: oracle_database_services  
   tags: dbservice
 
 - name: Reload Systemd
   shell: systemctl daemon-reload
-  when: ansible_distribution_major_version == "7"
+  when: ansible_distribution_major_version|int == 7 and oracle_database_services.changed
+  tags: dbservice
+
+- name: Configure startup of database on system boot
+  lineinfile:
+    dest: /etc/oratab
+    regexp: '^({{ item.db_name }}):({{ oracle_db_homes[item.oracle_home].path }}):N'
+    line: '\1:\2:Y'
+    backrefs: True
+  with_items: oracle_databases
   tags: dbservice
 
 - name: Ensure Database is running and started on system boot
-  service: 
+  service:
     name: oracle_{{ item.db_name }}
     state: running
-    enabled: True
+    enabled: true
   with_items: oracle_databases
   tags: dbservice

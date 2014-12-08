@@ -1,5 +1,5 @@
 [Unit]
-Description=Oracle Database Service {{ item.1.db_name }}
+Description=Oracle Database Service {{ item.db_name }}
 Conflicts=rescue.target
 After=syslog.target network.target
 After=multi-user.target
@@ -8,9 +8,9 @@ After=multi-user.target
 Type=forking
 User={{ oracle_db_owner_user_name }}
 TimeoutSec=600
-Environment="ORACLE_BASE={{ oracle_db_oracle_base }} ORACLE_HOME={{ item.0.path }} ORACLE_SID={{ item.1.db_name }}"
-ExecStart={{ item.0.path }}/bin/dbstart {{ item.0.path }}
-ExecStop={{ item.0.path }}/bin/dbshut {{ item.0.path }}
+Environment="ORACLE_BASE={{ oracle_db_oracle_base }} ORACLE_HOME={{ oracle_db_homes[item.oracle_home].path }} ORACLE_SID={{ item.db_name }}"
+ExecStart={{ oracle_db_homes[item.oracle_home].path }}/bin/dbstart {{ oracle_db_homes[item.oracle_home].path }}
+ExecStop={{ oracle_db_homes[item.oracle_home].path }}/bin/dbshut {{ oracle_db_homes[item.oracle_home].path }}
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=oracle

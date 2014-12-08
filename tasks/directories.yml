@@ -1,2 +1,8 @@
+---
 - name: ORACLE_BASE directory
-  file: name={{ oracle_db_oracle_base }} state=directory owner={{ oracle_db_owner_user_name }} group={{ oracle_inventory_group_name }} mode=0775 
+  file:
+    name: '{{ oracle_db_oracle_base }}'
+    state: directory
+    owner: '{{ oracle_db_owner_user_name }}'
+    group: '{{ oracle_inventory_group_name }}'
+    mode: '0775'

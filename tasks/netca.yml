@@ -3,23 +3,20 @@
   sudo: true
   sudo_user: '{{ oracle_db_owner_user_name }}'
   oracle_listener:
-    name: '{{ item.1.name }}'
-    port: '{{ item.1.port }}'
-    protocol: '{{ item.1.protocol }}'
-    oracle_home: '{{ item.0.path }}'
+    name: '{{ item.name }}'
+    port: '{{ item.port }}'
+    protocol: '{{ item.protocol }}'
+    oracle_home: '{{ oracle_db_homes[item.oracle_home].path }}'
     state: running
-  when: item.0.name == item.1.oracle_home
-  with_nested:
-  - oracle_db_homes
-  - oracle_listeners
-  tags: test
+  with_items: oracle_listeners
+  register: oracle_listeners_state
 
 - name: Running Net Configuration Assistant Using a Response File
-  shell: '{{ item.0.path }}/bin/netca -silent -responsefile {{ item.0.path }}/assistants/netca/netca.rsp'
+  shell: '{{ oracle_db_homes[item.0.oracle_home].path }}/bin/netca -silent -responsefile {{ oracle_db_homes[item.0.oracle_home].path }}/assistants/netca/netca.rsp'
   register: oracle_netca_output
   sudo: true
   sudo_user: '{{ oracle_db_owner_user_name }}'
-  when: item.0.name == item.1.oracle_home
-  with_nested:
-  - oracle_db_homes
+  when: item.1.changed
+  with_together:
   - oracle_listeners
+  - oracle_listeners_state.results

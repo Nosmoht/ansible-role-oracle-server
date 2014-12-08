@@ -1,6 +1,10 @@
 ---
 - name: /etc/security/limits.conf
-  lineinfile: dest=/etc/security/limits.conf regexp="^#?{{ oracle_db_owner_user_name }}\s+{{ item.type }}\s+{{ item.item }}\s+{{ item.value }}" line="{{ oracle_db_owner_user_name }}\t{{ item.type }}\t{{ item.item }}\t{{ item.value }}" state=present
+  lineinfile:
+    dest: /etc/security/limits.conf
+    regexp: ^#?{{ oracle_db_owner_user_name }}\s+{{ item.type }}\s+{{ item.item }}\s+{{ item.value }}
+    line: '{{ oracle_db_owner_user_name }}\t{{ item.type }}\t{{ item.item }}\t{{ item.value }}'
+    state: present
   with_items:
   - item: nofile
     type: soft
@@ -22,5 +26,10 @@
     value: 32768
 
 - name: /etc/security/limits.d/90-nproc.conf on RHEL6 (Doc ID 1487773.1)
-  lineinfile: dest=/etc/security/limits.d/90-nproc.conf regexp="^(\*)\s+(soft)\s+(nproc)\s+([0-9]+)" line="\1\t-\t\3\t16384" state=present backrefs=yes
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"
+  lineinfile:
+    dest: /etc/security/limits.d/90-nproc.conf
+    regexp: ^(\*)\s+(soft)\s+(nproc)\s+([0-9]+)
+    line: \1\t-\t\3\t16384
+    backrefs: true
+    state: present
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6

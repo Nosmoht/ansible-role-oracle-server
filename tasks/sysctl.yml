@@ -4,7 +4,7 @@
     name: '{{ item.name }}'
     value: '{{ item.value }}'
     state: present
-  ignore_errors: yes
+  ignore_errors: true
   with_items:
   - name: kernel.shmall
     value: '2097152'

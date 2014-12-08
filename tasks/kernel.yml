@@ -1,45 +1,60 @@
 ---
 - name: Setting Grub fact on RHEL 7
-  set_fact: 
+  set_fact:
     grub_config_file: /boot/grub2/grub.cfg
-    grub_regexp: "^menuentry"
-  when: ansible_distribution_major_version > "6"
-  tags: 
+    grub_regexp: ^menuentry
+  when: ansible_distribution_major_version|int > 6
+  tags:
   - elevator
   - thp
   - numa
 
 - name: Setting Grub fact on RHEL 5/6
-  set_fact: 
+  set_fact:
     grub_config_file: /boot/grub/grub.conf
-    grub_regexp: "^title"
-  when: ansible_distribution_major_version in ["5", "6"]
-  tags: 
+    grub_regexp: ^title
+  when: ansible_distribution_major_version|int in [5, 6]
+  tags:
   - elevator
   - thp
   - numa
 
 - name: Getting number of kernel lines in Grub config
-  shell: grep -c '{{ grub_regexp }}' {{ grub_config_file }}
+  shell: grep -c {{ grub_regexp }} {{ grub_config_file }}
   register: grub_kernel_count
-  tags: 
+  tags:
   - elevator
   - thp
   - numa
 
 - name: Setting Disk I/O Scheduler to deadline
-  lineinfile: dest="{{ grub_config_file }}" backrefs=True state=present regexp='(^\s+(kernel|linux16)(\s+(?!elevator=deadline)[\w=/\-\.]+)*)\s*$' line='\1 elevator=deadline'
-  when: ansible_distribution_major_version > 5
+  lineinfile:
+    dest: '{{ grub_config_file }}'
+    backrefs: true
+    state: present
+    regexp: (^\s+(kernel|linux16)(\s+(?!elevator=deadline)[\w=/\-\.]+)*)\s*$
+    line: \1 elevator=deadline
+  when: ansible_distribution_major_version|int > 5
   with_sequence: count={{ grub_kernel_count.stdout }}
   tags: elevator
 
 - name: Disabling Transparent Hugepages
-  lineinfile: dest="{{ grub_config_file }}" backrefs=True state=present regexp='(^\s+(kernel|linux16)(\s+(?!transparent_hugepages=never)[\w=/\-\.]+)*)\s*$' line='\1 transparent_hugepages=never'
-  when: ansible_distribution_major_version > 5
+  lineinfile:
+    dest: '{{ grub_config_file }}'
+    backrefs: true
+    state: present
+    regexp: (^\s+(kernel|linux16)(\s+(?!transparent_hugepages=never)[\w=/\-\.]+)*)\s*$
+    line: \1 transparent_hugepages=never
+  when: ansible_distribution_major_version|int > 5
   with_sequence: count={{ grub_kernel_count.stdout }}
   tags: thp
 
 - name: Disabling NUMA
-  lineinfile: dest="{{ grub_config_file }}" regexp='(^\s+(kernel|linux16)(\s+(?!numa=off)[\w=/\-\.]+)*)\s*$' line='\1 numa=off' backrefs=true state=present
+  lineinfile:
+    dest: '{{ grub_config_file }}'
+    regexp: (^\s+(kernel|linux16)(\s+(?!numa=off)[\w=/\-\.]+)*)\s*$
+    line: \1 numa=off
+    backrefs: true
+    state: present
   with_sequence: count={{ grub_kernel_count.stdout }}
   tags: numa

@@ -83,6 +83,7 @@ Example Playbook
           dbsnmppassword: ora12c
           characterset: AL32UTF8
           dbca_template_file: /tmp/ora12c.dbc
+          common_attributes: []
         - db_name: ORA11G
           oracle_home: dbhome_2
           syspassword: ora11gr2
@@ -90,6 +91,7 @@ Example Playbook
           dbsnmppassword: ora11gr2
           characterset: AL32UTF8
           dbca_template_file: /tmp/ora11g.dbc
+          common_attributes: []          
         oracle_listeners:
         - name: LISTENER
           protocol: TCP
@@ -98,6 +100,10 @@ Example Playbook
 
       roles:
          - { role: oracle-server }
+
+TODO
+----
+- DBCA response file must handle role separation
 
 License
 -------

@@ -1,6 +1,11 @@
 ---
 - name: Setting SELinux to permissive
-  lineinfile: dest=/etc/selinux/config regexp="^(SELINUX)=(enforcing)" line="\1=permissive" state=present backrefs=yes
+  lineinfile:
+    dest: /etc/selinux/config
+    regexp: ^(SELINUX)=(enforcing)
+    line: \1=permissive
+    backrefs: true
+    state: present
   register: selinux_config
 
 - name: Modifying SELinux mode

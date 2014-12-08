@@ -1,18 +1,19 @@
 ---
 - name: Copy response file
-  shell: cp {{ item.unpack_directory}}/database/response/db_install.rsp {{ item.response_file }}
-#  creates: '{{ item.responsefile }}'
-  when: not oracle_inventory_file_check.stat.exists or item.1.stdout == "0"
+  shell: cp {{ oracle_db_homes[item.0].unpack_directory}}/database/response/db_install.rsp {{ oracle_db_homes[item.0].response_file }}
+  args:
+    creates: '{{ oracle_db_homes[item.0].response_file }}'
+  when: not oracle_inventory_file_check.stat.exists or item.1.stdout|int == 0
   with_together:
   - oracle_db_homes
   - oracle_existing_db_homes.results
 
 - name: Setting parameters in response file
-  lineinfile: 
-    dest: '{{ item.0.response_file }}'
-    regexp: '^({{ item.1.name }})='
-    line: '\1={{ item.1.value }}'
-    backrefs: yes
+  lineinfile:
+    dest: '{{ oracle_db_homes[item.0].response_file }}'
+    regexp: ^({{ item.1.name }})=
+    line: \1={{ item.1.value }}
+    backrefs: true
     state: present
   with_nested:
   - oracle_db_homes
@@ -40,9 +41,19 @@
       value: true
 
 - name: Configure ORACLE_HOME in response file
-  lineinfile: dest={{ item.response_file }} regexp="^(ORACLE_HOME)=" line="\1={{ item.path }}" backrefs=yes state=present
-  with_items: oracle_db_homes
+  lineinfile:
+    dest: '{{ item.value.response_file }}'
+    regexp: ^(ORACLE_HOME)=
+    line: \1={{ item.value.path }}
+    backrefs: true
+    state: present
+  with_dict: oracle_db_homes
 
 - name: Configure oracle.install.db.InstallEdition in response file
-  lineinfile: dest={{ item.response_file }} regexp="^(oracle.install.db.InstallEdition)=" line="\1={{ item.edition }}" backrefs=yes state=present
-  with_items: oracle_db_homes
+  lineinfile:
+    dest: '{{ item.value.response_file }}'
+    regexp: ^(oracle.install.db.InstallEdition)=
+    line: \1={{ item.value.edition }}
+    backrefs: true
+    state: present
+  with_dict: oracle_db_homes
