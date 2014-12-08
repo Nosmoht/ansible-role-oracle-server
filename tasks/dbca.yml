@@ -13,10 +13,9 @@
     line: '\1\2{{ item.1.value }}\4'
     backrefs: yes
     state: present
-  #when: item.0.common_attributes is defined
   with_subelements:
   - oracle_databases
-  - common_attributes
+  - common_attributes|default([])
 
 - name: Ensuring template file is owned by Oracle Software owner
   file: 
