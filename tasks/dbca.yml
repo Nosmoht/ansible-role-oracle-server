@@ -15,7 +15,7 @@
     state: present
   with_subelements:
   - oracle_databases
-  - common_attributes|default([])
+  - common_attributes
 
 - name: Ensuring template file is owned by Oracle Software owner
   file: 
