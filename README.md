@@ -20,9 +20,11 @@ Library
 - oracle_listener to handle Oracle Listeners (start/stop/status)
 
 
-Todo
+Not implement yet
 ===
-- Add library modules to handle tablespaces, users and permissions
+- Grid Infrastructure installation and configuration
+- Patching
+- Library modules to handle tablespaces, users and permissions ...
 
 Requirements
 ===
@@ -44,7 +46,7 @@ Example Playbook
 ===
 
 * Install Oracle 12.1.0.2 Enterprise Edition in /app/oracle/product/12.1.0/dbhome\_1
-* Install Oracle 11.2.0.3 in /app/oracle/product/11.2.0/dbhome\_1. 
+* Install Oracle 11.2.0.3 Standard Edition in /app/oracle/product/11.2.0/dbhome\_1. 
 * Create 12c Database 
 * Create 11g Database
 * Setup a Listener using the 12c ORACLE_HOME
@@ -55,26 +57,26 @@ Example Playbook
       vars:
         oracle_app_directory: /app
         oracle_db_homes:
-        - name: dbhome_1
-          version: 12.1.0
-          edition: EE
-          path: '{{ oracle_app_directory }}/oracle/product/12.1.0/dbhome_1'
-          installation_files_directory: /share/oracle/12.1.0.2/patches
-          installation_files:
-          - linuxamd64_12102_database_1of2.zip
-          - linuxamd64_12102_database_2of2.zip
-          unpack_directory: /share/oracle/12.1.0.2/install
-          response_file: /tmp/dbhome_1.rsp
-        - name: dbhome_2
-          version: 11.2.0.3
-          edition: EE
-          path: '{{ oracle_app_directory }}/oracle/product/11.2.0/dbhome_1'
-          installation_files_directory: /share/oracle/11.2.0/patches
-          installation_files:
-          - p10404530_112030_Linux-x86-64_1of7.zip
-          - p10404530_112030_Linux-x86-64_2of7.zip
-          unpack_directory: /share/oracle/11.2.0/install
-          response_file: /tmp/dbhome_2.rsp
+          dbhome_1:
+            version: 12.1.0
+            edition: EE
+            path: '{{ oracle_app_directory }}/oracle/product/12.1.0/dbhome_1'
+            installation_files_directory: /share/oracle/12.1.0.2/patches
+            installation_files:
+            - linuxamd64_12102_database_1of2.zip
+            - linuxamd64_12102_database_2of2.zip
+            unpack_directory: /share/oracle/12.1.0.2/install
+            response_file: /tmp/dbhome_1.rsp
+          dbhome_2:
+            version: 11.2.0.3
+            edition: SE
+            path: '{{ oracle_app_directory }}/oracle/product/11.2.0/dbhome_1'
+            installation_files_directory: /share/oracle/11.2.0/patches
+            installation_files:
+            - p10404530_112030_Linux-x86-64_1of7.zip
+            - p10404530_112030_Linux-x86-64_2of7.zip
+            unpack_directory: /share/oracle/11.2.0/install
+            response_file: /tmp/dbhome_2.rsp
         oracle_databases:
         - db_name: ORA12C
           oracle_home: dbhome_1
