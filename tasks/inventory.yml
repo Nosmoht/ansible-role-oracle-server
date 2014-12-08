@@ -1,6 +1,0 @@
----
-- name: oraInst.loc
-  template: src=oraInst.loc.j2 dest=/etc/oraInst.loc owner={{oracle_db_owner_user_name }} group={{ oracle_inventory_group_name }} mode=0660
-
-- name: OraInventory
-  file: name={{ oracle_inventory_directory }} owner={{oracle_db_owner_user_name }} group={{ oracle_inventory_group_name }} mode=0775 state=directory
