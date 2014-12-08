@@ -7,13 +7,24 @@
   - oracle_databases
 
 - name: Modifying Oracle Database template file
-  lineinfile: dest={{ item.0.dbca_template_file }} regexp='^(\s+)(<option name="{{ item.1.name }}" value=")(.*)("/?>)' line="\1\2{{ item.1.value }}\4" backrefs=yes state=present
+  lineinfile: 
+    dest: '{{ item.0.dbca_template_file }}'
+    regexp: '^(\s+)(<option name="{{ item.1.name }}" value=")(.*)("/?>)'
+    line: '\1\2{{ item.1.value }}\4'
+    backrefs: yes
+    state: present
+  #when: item.0.common_attributes is defined
   with_subelements:
   - oracle_databases
   - common_attributes
 
 - name: Ensuring template file is owned by Oracle Software owner
-  file: dest="{{ item.dbca_template_file }}" owner={{ oracle_db_owner_user_name }} group={{ oracle_inventory_group_name }} mode=0664 state=file
+  file: 
+    dest: '{{ item.dbca_template_file }}'
+    owner: '{{ oracle_db_owner_user_name }}'
+    group: '{{ oracle_inventory_group_name }}'
+    mode: '0664'
+    state: file
   with_items: oracle_databases
 
 - name: Installing Oracle Database
@@ -36,7 +47,7 @@
     src: dbora.j2
     owner: root
     group: root
-    mode: 0750
+    mode: '0750'
   when: ansible_distribution_major_version in ["5", "6"] and item.0.name == item.1.oracle_home  
   with_nested:
   - oracle_db_homes
@@ -49,7 +60,7 @@
     src: oracle.service.j2
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
   when: ansible_distribution_major_version == "7" and item.0.name == item.1.oracle_home
   with_nested:
   - oracle_db_homes
