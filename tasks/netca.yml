@@ -1,14 +1,23 @@
 ---
+- name: Checking if listener.ora does exist
+  stat:
+    path: '{{ oracle_db_homes[item.oracle_home] }}/network/admin/listener.ora' 
+  with_items: oracle_listeners
+  register: oracle_listener_ora_stat
+
 - name: Ensuring that Oracle Listener is running
   sudo: true
   sudo_user: '{{ oracle_db_owner_user_name }}'
   oracle_listener:
-    name: '{{ item.name }}'
-    port: '{{ item.port }}'
-    protocol: '{{ item.protocol }}'
-    oracle_home: '{{ oracle_db_homes[item.oracle_home].path }}'
+    name: '{{ item.0.name }}'
+    port: '{{ item.0.port }}'
+    protocol: '{{ item.0.protocol }}'
+    oracle_home: '{{ oracle_db_homes[item.0.oracle_home].path }}'
     state: running
-  with_items: oracle_listeners
+  when: item.1.stat.exists
+  with_together:
+  - oracle_listeners
+  - oracle_listener_ora_stat.results
   register: oracle_listeners_state
 
 - name: Running Net Configuration Assistant Using a Response File
@@ -16,7 +25,7 @@
   register: oracle_netca_output
   sudo: true
   sudo_user: '{{ oracle_db_owner_user_name }}'
-  when: item.1.changed
+  when: item.1.changed or item.1.skipped
   with_together:
   - oracle_listeners
   - oracle_listeners_state.results
