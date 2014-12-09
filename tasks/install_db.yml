@@ -17,12 +17,9 @@
 - name: Creating environment file
   template:
     src: set_env_DB.j2
-    dest: '{{ oracle_db_owner_user_home }}/.set_env_{{ item.1.db_name }}'
+    dest: '{{ oracle_db_owner_user_home }}/.set_env_{{ item.db_name }}'
     group: '{{ oracle_inventory_group_name }}'
     owner: '{{ oracle_db_owner_user_name }}'
     mode: '0664'
-  when: item.0.name == item.1.oracle_home
-  with_nested:
-  - oracle_db_homes
-  - oracle_databases
+  with_items: oracle_databases
   tags: setenv
