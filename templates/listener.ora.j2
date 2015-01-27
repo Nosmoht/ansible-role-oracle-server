@@ -1,0 +1,17 @@
+{% for listener in oracle_listeners %}
+{{ listener.name }} =
+  (DESCRIPTION =
+      (ADDRESS =
+        (PROTOCOL = {{ listener.protocol | default(TCP) }})
+        (HOST = {{ ansible_fqdn }})
+        (PORT = {{ listener.port | default(1521) }})
+      )
+      (ADDRESS =
+        (PROTOCOL = IPC)
+        (KEY = EXTPROC{{ listener.port }})
+      )
+    )
+  )
+
+{% endfor %}
+ADR_BASE={{ oracle_db_oracle_base }}
