@@ -40,8 +40,8 @@ def ensure(module):
 	state = module.params['state']
 	# Set environment variables
 	os.environ['ORACLE_HOME'] = oracle_home
-#	if tns_admin:
-#	    os.environ['TNS_ADMIN'] = tns_admin
+	if tns_admin:
+	    os.environ['TNS_ADMIN'] = tns_admin
 	# Execute tasks based on current state
 	if state == 'reloaded':
 		changed = reload_listener(module, name)
