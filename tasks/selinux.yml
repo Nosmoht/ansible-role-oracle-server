@@ -1,5 +1,5 @@
 ---
-- name: Setting SELinux to permissive
+- name: Ensure SELinux configuration
   lineinfile:
     dest: /etc/selinux/config
     regexp: ^(SELINUX)=(enforcing)

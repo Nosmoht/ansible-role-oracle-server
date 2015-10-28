@@ -1,5 +1,5 @@
 ---
-- name: Oracle ASM Support
+- name: Ensure Oracle ASM Support package
   yum:
     name: oracleasm-support
     state: present

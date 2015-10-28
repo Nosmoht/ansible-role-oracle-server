@@ -1,5 +1,5 @@
 ---
-- name: Ensuring hostname is resolvable
+- name: Ensure hostname is resolvable
   lineinfile:
     dest: /etc/hosts
     state: present

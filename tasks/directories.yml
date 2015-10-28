@@ -1,5 +1,5 @@
 ---
-- name: ORACLE_BASE directory
+- name: Ensure ORACLE_BASE directory
   file:
     name: '{{ oracle_db_oracle_base }}'
     state: directory
