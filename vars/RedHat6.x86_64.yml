@@ -42,3 +42,8 @@ oracle_packages:
 - pam
 oracle_oracleasmlib_files:
 - oracleasmlib-2.0.4-1.el6.x86_64.rpm
+oracle_service_file_name_prefix: /etc/init.d/oracle_
+oracle_service_file_name_suffix: ''
+oracle_service_file_template: dbora.j2
+oracle_grub_config_file: /boot/grub/grub.conf
+oracle_grub_regexp: ^title

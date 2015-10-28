@@ -1,27 +1,8 @@
 ---
-- name: Setting Grub fact on RHEL 7
-  set_fact:
-    grub_config_file: /boot/grub2/grub.cfg
-    grub_regexp: ^menuentry
-  when: ansible_distribution_major_version|int > 6
-  tags:
-  - elevator
-  - thp
-  - numa
-
-- name: Setting Grub fact on RHEL 5/6
-  set_fact:
-    grub_config_file: /boot/grub/grub.conf
-    grub_regexp: ^title
-  when: ansible_distribution_major_version|int in [5, 6]
-  tags:
-  - elevator
-  - thp
-  - numa
-
-- name: Getting number of kernel lines in Grub config
-  shell: grep -c {{ grub_regexp }} {{ grub_config_file }}
+- name: Get number of kernel lines in Grub config
+  shell: grep -c {{ oracle_grub_regexp }} {{ oracle_grub_config_file }}
   register: grub_kernel_count
+  changed_when: false
   tags:
   - elevator
   - thp
@@ -29,7 +10,7 @@
 
 - name: Setting Disk I/O Scheduler to deadline
   lineinfile:
-    dest: '{{ grub_config_file }}'
+    dest: '{{ oracle_grub_config_file }}'
     backrefs: true
     state: present
     regexp: (^\s+(kernel|linux16)(\s+(?!elevator=deadline)[\w=/\-\.]+)*)\s*$
@@ -40,7 +21,7 @@
 
 - name: Disabling Transparent Hugepages
   lineinfile:
-    dest: '{{ grub_config_file }}'
+    dest: '{{ oracle_grub_config_file }}'
     backrefs: true
     state: present
     regexp: (^\s+(kernel|linux16)(\s+(?!transparent_hugepages=never)[\w=/\-\.]+)*)\s*$
@@ -51,7 +32,7 @@
 
 - name: Disabling NUMA
   lineinfile:
-    dest: '{{ grub_config_file }}'
+    dest: '{{ oracle_grub_config_file }}'
     regexp: (^\s+(kernel|linux16)(\s+(?!numa=off)[\w=/\-\.]+)*)\s*$
     line: \1 numa=off
     backrefs: true

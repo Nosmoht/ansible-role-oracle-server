@@ -33,3 +33,8 @@ oracle_packages:
 - pam
 oracle_oracleasmlib_files:
 - oracleasmlib-2.0.8-2.el7.x86_64.rpm
+oracle_service_file_name_prefix: /etc/systemd/system/oracle_
+oracle_service_file_name_suffix: .service
+oracle_service_file_template: oracle.service.j2
+oracle_grub_config_file: /boot/grub2/grub.cfg
+oracle_grub_regexp: ^menuentry
