@@ -1,6 +1,4 @@
 ---
-- include_vars: '{{ ansible_os_family }}{{ansible_distribution_major_version }}.{{ansible_architecture }}.yml'
-
 - name: Installing required packages
   yum:
     name: '{{ item }}'
