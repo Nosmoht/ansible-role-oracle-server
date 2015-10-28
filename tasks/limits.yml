@@ -3,7 +3,7 @@
   lineinfile:
     dest: /etc/security/limits.conf
     regexp: ^#?{{ oracle_db_owner_user_name }}\s+{{ item.type }}\s+{{ item.item }}\s+{{ item.value }}
-    line: '{{ oracle_db_owner_user_name }}\t{{ item.type }}\t{{ item.item }}\t{{ item.value }}'
+    line: "{{ oracle_db_owner_user_name }}\t{{ item.type }}\t{{ item.item }}\t{{ item.value }}"
     state: present
   with_items:
   - item: nofile
