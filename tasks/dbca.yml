@@ -14,7 +14,7 @@
   - oracle_databases
   - common_attributes
 
-- name: Ensuring template file is owned by Oracle Software owner
+- name: Ensure DBCA template file
   file:
     dest: '{{ item.dbca_template_file }}'
     owner: '{{ oracle_db_owner_user_name }}'
@@ -23,7 +23,7 @@
     state: file
   with_items: oracle_databases
 
-- name: Installing Oracle Database
+- name: Ensure Oracle Database
   shell: '{{ oracle_db_homes[item.oracle_home].path }}/bin/dbca -silent -createDatabase
     -templateName {{ item.dbca_template_file }} -gdbName {{ item.db_name }} -sid {{
     item.db_name }} -sysPassword {{ item.syspassword }} -systemPassword {{ item.systempassword
@@ -34,29 +34,15 @@
   sudo_user: '{{ oracle_db_owner_user_name }}'
   with_items: oracle_databases
 
-- name: Create service file to startup Database on boot using SysV
+- name: Ensure service file
   template:
-    dest: /etc/init.d/oracle_{{ item.db_name }}
-    src: dbora.j2
+    dest: '{{ oracle_service_file_name_prefix }}{{ item.db_name }}{{ oracle_service_file_name_suffix }}'
+    src: '{{ oracle_service_file_template }}'
     owner: root
     group: root
     mode: '0750'
-  when: ansible_distribution_major_version|int in [5, 6]
   with_items: oracle_databases
   register: oracle_database_services
-  tags: dbservice
-
-- name: Create service file to startup Database on boot using Systemd
-  template:
-    dest: /etc/systemd/system/oracle_{{ item.db_name }}.service
-    src: oracle.service.j2
-    owner: root
-    group: root
-    mode: '0644'
-  when: ansible_distribution_major_version|int == 7
-  with_items: oracle_databases
-  register: oracle_database_services  
-  tags: dbservice
 
 - name: Reload Systemd
   shell: systemctl daemon-reload
@@ -74,7 +60,7 @@
 
 - name: Ensure Database is running and started on system boot
   service:
-    name: oracle_{{ item.db_name }}
+    name: '{{ oracle_service_file_name_prefix }}{{ item.db_name }}{{ oracle_service_file_name_suffix }}'
     state: running
     enabled: true
   with_items: oracle_databases
