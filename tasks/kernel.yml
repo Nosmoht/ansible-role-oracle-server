@@ -8,18 +8,18 @@
   - thp
   - numa
 
-- name: Setting Disk I/O Scheduler to deadline
+- name: Ensure Disk I/O Scheduler
   lineinfile:
     dest: '{{ oracle_grub_config_file }}'
     backrefs: true
     state: present
-    regexp: (^\s+(kernel|linux16)(\s+(?!elevator=deadline)[\w=/\-\.]+)*)\s*$
-    line: \1 elevator=deadline
+    regexp: (^\s+(kernel|linux16)(\s+(?!elevator={{ oracle_kernel_scheduler }})[\w=/\-\.]+)*)\s*$
+    line: \1 elevator={{ oracle_kernel_scheduler }}
   when: ansible_distribution_major_version|int > 5
   with_sequence: count={{ grub_kernel_count.stdout }}
   tags: elevator
 
-- name: Disabling Transparent Hugepages
+- name: Ensure Transparent Hugepages are disabled
   lineinfile:
     dest: '{{ oracle_grub_config_file }}'
     backrefs: true
@@ -30,7 +30,7 @@
   with_sequence: count={{ grub_kernel_count.stdout }}
   tags: thp
 
-- name: Disabling NUMA
+- name: Ensure NUMA is disabled
   lineinfile:
     dest: '{{ oracle_grub_config_file }}'
     regexp: (^\s+(kernel|linux16)(\s+(?!numa=off)[\w=/\-\.]+)*)\s*$

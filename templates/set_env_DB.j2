@@ -1,8 +1,9 @@
 #!/bin/bash
 
 export ORACLE_BASE={{ oracle_db_oracle_base }}
-export ORACLE_HOME={{ oracle_db_homes[item.oracle_home].path }}
-export ORACLE_SID={{ item.sid | default(item.db_name) }}
+export ORACLE_HOME={% for home in oracle_db_homes %}{% if home.get("name") == item.oracle_home %}{{ home.path }}{% endif %}{% endfor %}
+
+export ORACLE_SID={{ item.sid | default(item.name) }}
 export TNS_ADMIN={{ oracle_tns_admin }}
 export PATH=${ORACLE_HOME}/bin:${ORACLE_HOME}/OPatch:${PATH}
 export LD_LIBRARY_PATH=${ORACLE_HOME}/lib:${ORACLE_HOME}/lib32
