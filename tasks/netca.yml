@@ -9,7 +9,7 @@
     mode: '0664'
   register: oracle_listeners_stat
 
-- name: Ensuring Oracle Listener
+- name: Ensure Oracle Listener
   become: true
   become_method: sudo
   become_user: '{{ oracle_db_owner_user_name }}'
@@ -17,7 +17,7 @@
     name: '{{ item.name }}'
     port: '{{ item.port }}'
     protocol: '{{ item.protocol }}'
-    oracle_home: '{{ oracle_db_homes[item.oracle_home].path }}'
+    oracle_home: '{{ item.path }}'
     tns_admin: '{{ oracle_tns_admin }}'
     state: running
   with_items: oracle_listeners

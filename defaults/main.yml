@@ -1,4 +1,5 @@
 ---
+oracle_kernel_scheduler: deadline
 oracle_sysctl_config:
 - name: kernel.shmall
   value: '{{ oracle_kernel_shmall | default(2097152) }}'

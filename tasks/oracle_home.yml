@@ -5,21 +5,24 @@
   register: oracle_inventory_file_check
 
 - name: Check if ORACLE_HOME already exists
-  shell: grep -c {{ item.value.path }} {{ oracle_inventory_file }}
+  shell: grep -c {{ item.path }} {{ oracle_inventory_file }}
   when: oracle_inventory_file_check.stat.exists
   register: oracle_existing_db_homes
-  with_dict: oracle_db_homes
+  with_items: oracle_db_homes
   failed_when: oracle_existing_db_homes.rc not in [0, 1]
   changed_when: false
 
 - name: Ensure unpack directory
   file:
-    name: '{{ item.value.unpack_directory }}'
+    name: '{{ item.0.unpack_directory }}'
     owner: '{{ oracle_db_owner_user_name }}'
     group: '{{ oracle_inventory_group_name }}'
     mode: '0775'
     state: directory
-  with_dict: oracle_db_homes
+  when: item.1.stdout == "0"
+  with_together:
+  - oracle_db_homes
+  - oracle_existing_db_homes.results
 
 - name: Unzip Installation files
   become: true
@@ -36,7 +39,7 @@
   become: true
   become_user: '{{ oracle_db_owner_user_name }}'
   become_method: sudo
-  shell: '{{ oracle_db_homes[item.0].unpack_directory }}/database/runInstaller -silent -responseFile {{ oracle_db_homes[item.0].response_file }} -waitforcompletion -force'
+  shell: '{{ item.0.unpack_directory }}/database/runInstaller -silent -responseFile {{ item.0.response_file }} -waitforcompletion -force'
   register: oracle_db_homes_install
   when: not oracle_inventory_file_check.stat.exists or item.1.stdout == "0"
   failed_when: oracle_db_homes_install.stdout.find('root.sh') == -1
@@ -56,7 +59,7 @@
   become: true
   become_user: root
   become_method: sudo
-  shell: '{{ oracle_db_homes[item.0].path }}/root.sh'
+  shell: '{{ item.0.path }}/root.sh'
   when: item.1.changed and item.1.stdout.find('root.sh') != -1
   with_together:
   - oracle_db_homes
@@ -66,9 +69,9 @@
   become: true
   become_user: '{{ oracle_db_owner_user_name }}'
   become_method: sudo
-  shell: 'unzip -u -o {{ item.value.installation_files_directory }}/{{ item.value.opatch_patch_file }} -d {{ item.value.path }}'
+  shell: 'unzip -u -o {{ item.installation_files_directory }}/{{ item.opatch_patch_file }} -d {{ item.path }}'
   register: oracle_opatch_unpack_results
   changed_when: oracle_opatch_unpack_results.stdout.find('inflating') != 1
   when: item.opatch_patch_file is defined
-  with_dict: oracle_db_homes
+  with_items: oracle_db_homes
   tags: patch
