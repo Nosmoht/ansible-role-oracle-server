@@ -22,3 +22,22 @@ oracle_sysctl_config:
   value: 262144
 - name: net.core.wmem_max
   value: 1048576
+oracle_limits_config:
+- item: nofile
+  type: soft
+  value: 1024
+- item: nofile
+  type: hard
+  value: 65536
+- item: nproc
+  type: soft
+  value: 2047
+- item: nproc
+  type: hard
+  value: 16384
+- item: stack
+  type: soft
+  value: 10240
+- item: stack
+  type: hard
+  value: 32768
