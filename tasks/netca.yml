@@ -17,7 +17,7 @@
     name: '{{ item.name }}'
     port: '{{ item.port }}'
     protocol: '{{ item.protocol }}'
-    oracle_home: '{{ item.path }}'
+    oracle_home: '{% for home in oracle_db_homes %}{% if home.get("name") == item.oracle_home %}{{ home.path }}{% endif %}{% endfor %}'
     tns_admin: '{{ oracle_tns_admin }}'
     state: running
   with_items: oracle_listeners
