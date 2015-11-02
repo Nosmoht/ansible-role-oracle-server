@@ -1,18 +1,18 @@
 ---
 - include: sysctl.yml
-  tags: sysctl
+  tags: oracle_sysctl
 
 - include: limits.yml
-  tags: limits
+  tags: oracle_limits
 
 - include: oracle_home.yml
   tags: oracle_home
 
 - include: netca.yml
-  tags: netca
+  tags: oracle_netca
 
 - include: dbca.yml
-  tags: dbca
+  tags: oracle_dbca
 
 - name: Creating environment file
   template:
@@ -22,4 +22,4 @@
     owner: '{{ oracle_db_owner_user_name }}'
     mode: '0664'
   with_items: oracle_databases
-  tags: setenv
+  tags: oracle_setenv
