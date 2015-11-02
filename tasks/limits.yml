@@ -7,7 +7,7 @@
     state: present
   with_items: oracle_limits_config
 
-- name: /etc/security/limits.d/90-nproc.conf on RHEL6 (Doc ID 1487773.1)
+- name: Ensure /etc/security/limits.d/90-nproc.conf on RHEL6 (Doc ID 1487773.1)
   lineinfile:
     dest: /etc/security/limits.d/90-nproc.conf
     regexp: ^(\*)\s+(soft)\s+(nproc)\s+([0-9]+)
