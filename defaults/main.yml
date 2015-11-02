@@ -1,7 +1,7 @@
 ---
 oracle_sysctl_config:
 - name: kernel.shmall
-  value: 2097152
+  value: '{{ oracle_kernel_shmall | default(2097152) }}'
 - name: kernel.shmmax
   value: 1050470400
 - name: kernel.shmmni
