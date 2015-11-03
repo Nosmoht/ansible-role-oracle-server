@@ -1,15 +1,12 @@
 ---
 - include: hostname.yml
-  tags: ns
-
-- include: kernel.yml
-  tags: kernel
+  tags: oracle_ns
 
 - include: packages.yml
-  tags: packages
+  tags: oracle_packages
 
 - include: selinux.yml
-  tags: selinux
+  tags: oracle_selinux
 
 - include: directories.yml
-  tags: directories
+  tags: oracle_directories

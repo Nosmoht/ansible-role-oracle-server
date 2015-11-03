@@ -1,18 +1,5 @@
 ---
-galaxy_info:
-  author: Thomas Krahn
-  description: Install Oracle Database software and Database
-  company: 
-  license: BSD
-  min_ansible_version: 1.4
-  platforms:
-  - name: EL
-    versions:
-  #  - 5
-    - 6
-    - 7
-  categories:
-  - database
-  - database:sql
-dependencies: 
-  - role: oracle-common
+dependencies:
+- role: kernel
+  kernel_config: '{{ oracle_kernel_config }}'
+- role: oracle-common
