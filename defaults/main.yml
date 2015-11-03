@@ -42,3 +42,9 @@ oracle_limits_config:
 - item: stack
   type: hard
   value: 32768
+- item: memlock
+  type: soft
+  value: '{{ (ansible_memtotal_mb * 0.9 * 1024) | round(0, "ceil") | int }}'
+- item: memlock
+  type: hard
+  value: '{{ (ansible_memtotal_mb * 0.9 * 1024) | round(0, "ceil") | int }}'
