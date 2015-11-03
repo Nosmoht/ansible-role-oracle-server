@@ -27,9 +27,10 @@ Not implement yet
 
 # Requirements
 - Ansible 1.9
-- Roles
-  - [kernel]()
-  - [oracle-common]
+- Ansible roles
+  - [kernel](https://github.com/Nosmoht/ansible-role-kernel.git)
+  - [selinux](https://github.com/Nosmoht/ansible-role-selinux.git)
+  - [oracle-common](https://github.com/Nosmoht/ansible-role-oracle-common.git)
 - RHEL based Linux distribution.
 
 # Variables

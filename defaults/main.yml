@@ -1,4 +1,13 @@
 ---
+oracle_kernel_scheduler: deadline
+oracle_kernel_config:
+- option: elevator
+  value: '{{ oracle_kernel_scheduler }}'
+- option: transparent_hugepages
+  value: never
+- option: numa
+  value: 'off'
+oracle_selinux_mode: disabled
 oracle_sysctl_config:
 - name: kernel.shmall
   value: 2097152

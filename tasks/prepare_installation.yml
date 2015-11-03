@@ -5,8 +5,5 @@
 - include: packages.yml
   tags: oracle_packages
 
-- include: selinux.yml
-  tags: oracle_selinux
-
 - include: directories.yml
   tags: oracle_directories
