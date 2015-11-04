@@ -8,51 +8,69 @@ oracle_kernel_config:
 - option: numa
   value: 'off'
 oracle_selinux_mode: disabled
-oracle_sysctl_config:
-- name: kernel.shmall
-  value: '{{ oracle_kernel_shmall | default(2097152) }}'
-- name: kernel.shmmax
-  value: 1050470400
-- name: kernel.shmmni
-  value: 4096
-- name: kernel.sem
-  value: 250 32000 100 128
-- name: fs.file-max
-  value: 6815744
-- name: fs.aio-max-nr
-  value: 1048576
-- name: net.ipv4.ip_local_port_range
-  value: 9000 65500
-- name: net.core.rmem_default
-  value: 262144
-- name: net.core.rmem_max
-  value: 4194304
-- name: net.core.wmem_default
-  value: 262144
-- name: net.core.wmem_max
-  value: 1048576
+oracle_limits_memlock: '{{ (ansible_memtotal_mb * 1024 * 0.9) | round(0, "ceil") | int }}'
+oracle_kernel_shmall: 2097152
+oracle_kernel_shmmax: 1050470400
+oracle_kernel_vm_hugepages: 1025
+oracle_kernel_parameters:
+- filename: 50-oracle.conf
+  parameters:
+  - name: kernel.shmall
+    value: '{{ oracle_kernel_shmall }}'
+  - name: kernel.shmmax
+    value: '{{ oracle_kernel_shmmax }}'
+  - name: kernel.shmmni
+    value: 4096
+  - name: kernel.sem
+    value: 250 32000 100 128
+  - name: fs.file-max
+    value: 6815744
+  - name: fs.aio-max-nr
+    value: 1048576
+  - name: net.ipv4.ip_local_port_range
+    value: 9000 65500
+  - name: net.core.rmem_default
+    value: 262144
+  - name: net.core.rmem_max
+    value: 4194304
+  - name: net.core.wmem_default
+    value: 262144
+  - name: net.core.wmem_max
+    value: 1048576
+  - name: vm.nr_hugepages
+    value: '{{ oracle_kernel_vm_hugepages }}'
 oracle_limits_config:
-- item: nofile
-  type: soft
-  value: 1024
-- item: nofile
-  type: hard
-  value: 65536
-- item: nproc
-  type: soft
-  value: 2047
-- item: nproc
-  type: hard
-  value: 16384
-- item: stack
-  type: soft
-  value: 10240
-- item: stack
-  type: hard
-  value: 32768
-- item: memlock
-  type: soft
-  value: '{{ (ansible_memtotal_mb * 0.9 * 1024) | round(0, "ceil") | int }}'
-- item: memlock
-  type: hard
-  value: '{{ (ansible_memtotal_mb * 0.9 * 1024) | round(0, "ceil") | int }}'
+- filename: 50-oracle.conf
+  parameters:
+  - domain: '{{ oracle_db_owner_user_name }}'
+    item: nofile
+    type: soft
+    value: 1024
+  - domain: '{{ oracle_db_owner_user_name }}'
+    item: nofile
+    type: hard
+    value: 65536
+  - domain: '{{ oracle_db_owner_user_name }}'
+    item: nproc
+    type: soft
+    value: 2047
+  - domain: '{{ oracle_db_owner_user_name }}'
+    item: nproc
+    type: hard
+    value: 16384
+  - domain: '{{ oracle_db_owner_user_name }}'
+    item: stack
+    type: soft
+    value: 10240
+  - domain: '{{ oracle_db_owner_user_name }}'
+    item: stack
+    type: hard
+    value: 32768
+  - domain: '{{ oracle_db_owner_user_name }}'
+    item: memlock
+    type: soft
+    value: '{{ oracle_limits_memlock }}'
+  - domain: '{{ oracle_db_owner_user_name }}'
+    item: memlock
+    type: hard
+    value: '{{ oracle_limits_memlock }}'

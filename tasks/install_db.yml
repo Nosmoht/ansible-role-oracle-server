@@ -1,10 +1,4 @@
 ---
-- include: sysctl.yml
-  tags: oracle_sysctl
-
-- include: limits.yml
-  tags: oracle_limits
-
 - include: oracle_home.yml
   tags: oracle_home
 
