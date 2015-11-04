@@ -1,6 +1,11 @@
 ---
 - name: Copying DBCA template file
+  become: true
+  become_user: '{{ oracle_db_owner_user_name }}'
+  become_method: sudo
   shell: cp {{ oracle_db_homes[item.oracle_home].path }}/assistants/dbca/templates/General_Purpose.dbc {{ item.dbca_template_file }}
+  args:
+    creates: '{{ item.dbca_template_file }}'
   with_items: oracle_databases
 
 - name: Modifying Oracle Database template file
@@ -19,20 +24,23 @@
     dest: '{{ item.dbca_template_file }}'
     owner: '{{ oracle_db_owner_user_name }}'
     group: '{{ oracle_inventory_group_name }}'
-    mode: '0664'
+    mode: '0700'
     state: file
   with_items: oracle_databases
 
 - name: Ensure Oracle Database
+  become: true
+  become_method: sudo
+  become_user: '{{ oracle_db_owner_user_name }}'
   shell: '{{ oracle_db_homes[item.oracle_home].path }}/bin/dbca -silent -createDatabase
     -templateName {{ item.dbca_template_file }} -gdbName {{ item.db_name }} -sid {{
     item.db_name }} -sysPassword {{ item.syspassword }} -systemPassword {{ item.systempassword
     }} -dbsnmpPassword {{ item.dbsnmppassword }} -emConfiguration LOCAL -storageType
     FS -datafileJarLocation {{ oracle_db_homes[item.oracle_home].path }}/assistants/dbca/templates -characterset
     {{ item.characterset }} -obfuscatedPasswords false -sampleSchema false'
-  sudo: true
-  sudo_user: '{{ oracle_db_owner_user_name }}'
   with_items: oracle_databases
+  register: oracle_database_installation
+  failed_when: oracle_database_installation.stdout.find('100% complete') == -1
 
 - name: Ensure service file
   template:

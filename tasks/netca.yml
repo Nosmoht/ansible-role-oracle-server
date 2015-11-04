@@ -1,5 +1,6 @@
 ---
-- name: Creating listener.ora
+
+- name: Ensure listener.ora
   template:
     dest: '{{ oracle_tns_admin }}/listener.ora'
     src: listener.ora.j2
@@ -8,24 +9,15 @@
     mode: '0664'
   register: oracle_listeners_stat
 
-- name: Ensuring that Oracle Listener is running
-  sudo: true
-  sudo_user: '{{ oracle_db_owner_user_name }}'
+- name: Ensure Oracle Listener
+  become: true
+  become_method: sudo
+  become_user: '{{ oracle_db_owner_user_name }}'
   oracle_listener:
     name: '{{ item.name }}'
     port: '{{ item.port }}'
     protocol: '{{ item.protocol }}'
-    oracle_home: '{{ oracle_db_homes[item.oracle_home].path }}'
+    oracle_home: '{% for home in oracle_db_homes %}{% if home.get("name") == item.oracle_home %}{{ home.path }}{% endif %}{% endfor %}'
     tns_admin: '{{ oracle_tns_admin }}'
     state: running
   with_items: oracle_listeners
-
-#- name: Running Net Configuration Assistant Using a Response File
-#  shell: '{{ oracle_db_homes[item.0.oracle_home].path }}/bin/netca -silent -responsefile {{ oracle_db_homes[item.0.oracle_home].path }}/assistants/netca/netca.rsp'
-#  register: oracle_netca_output
-#  sudo: true
-#  sudo_user: '{{ oracle_db_owner_user_name }}'
-#  when: item.1.changed or item.1.skipped
-#  with_together:
-#  - oracle_listeners
-#  - oracle_listeners_state.results
