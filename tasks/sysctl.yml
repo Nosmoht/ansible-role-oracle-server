@@ -1,8 +1,0 @@
----
-- name: Ensure sysctl configuration
-  sysctl:
-    name: '{{ item.name }}'
-    value: '{{ item.value }}'
-    state: present
-  ignore_errors: true
-  with_items: oracle_sysctl_config

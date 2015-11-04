@@ -1,7 +1,4 @@
 ---
-- include: sysctl.yml
-  tags: sysctl
-
 - include: limits.yml
   tags: limits
 

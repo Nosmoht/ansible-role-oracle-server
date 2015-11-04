@@ -2,6 +2,7 @@
 dependencies:
 - role: kernel
   kernel_config: '{{ oracle_kernel_config }}'
+  kernel_parameters: '{{ oracle_kernel_parameters }}'
 - role: selinux
   selinux_mode: '{{ oracle_selinux_mode }}'
 - role: oracle-common
