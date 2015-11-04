@@ -31,6 +31,7 @@ Not implement yet
   - [kernel](https://github.com/Nosmoht/ansible-role-kernel.git)
   - [selinux](https://github.com/Nosmoht/ansible-role-selinux.git)
   - [oracle-common](https://github.com/Nosmoht/ansible-role-oracle-common.git)
+  - [pam-limits](https://github.com/Nosmoht/ansible-role-kernel.git)
 - RHEL based Linux distribution.
 
 # Variables
@@ -51,26 +52,26 @@ Following example will:
   vars:
     oracle_app_directory: /app
     oracle_db_homes:
-      dbhome_1:
-        version: 12.1.0
-        edition: EE
-        path: '{{ oracle_app_directory }}/oracle/product/12.1.0/dbhome_1'
-        installation_files_directory: /share/oracle/12.1.0.2/patches
-        installation_files:
-        - linuxamd64_12102_database_1of2.zip
-        - linuxamd64_12102_database_2of2.zip
-        unpack_directory: /share/oracle/12.1.0.2/install
-        response_file: /tmp/dbhome_1.rsp
-      dbhome_2:
-        version: 11.2.0.3
-        edition: SE
-        path: '{{ oracle_app_directory }}/oracle/product/11.2.0/dbhome_1'
-        installation_files_directory: /share/oracle/11.2.0/patches
-        installation_files:
-        - p10404530_112030_Linux-x86-64_1of7.zip
-        - p10404530_112030_Linux-x86-64_2of7.zip
-        unpack_directory: /share/oracle/11.2.0/install
-        response_file: /tmp/dbhome_2.rsp
+    - name: dbhome_1
+      version: 12.1.0
+      edition: EE
+      path: '{{ oracle_app_directory }}/oracle/product/12.1.0/dbhome_1'
+      installation_files_directory: /share/oracle/12.1.0.2/patches
+      installation_files:
+      - linuxamd64_12102_database_1of2.zip
+      - linuxamd64_12102_database_2of2.zip
+      unpack_directory: /share/oracle/12.1.0.2/install
+      response_file: /tmp/dbhome_1.rsp
+    - name: dbhome
+      version: 11.2.0.3
+      edition: SE
+      path: '{{ oracle_app_directory }}/oracle/product/11.2.0/dbhome_1'
+      installation_files_directory: /share/oracle/11.2.0/patches
+      installation_files:
+      - p10404530_112030_Linux-x86-64_1of7.zip
+      - p10404530_112030_Linux-x86-64_2of7.zip
+      unpack_directory: /share/oracle/11.2.0/install
+      response_file: /tmp/dbhome_2.rsp
     oracle_databases:
     - db_name: ORA12C
       oracle_home: dbhome_1
