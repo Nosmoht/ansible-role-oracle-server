@@ -1,6 +1,11 @@
 ---
 - name: Copying DBCA template file
+  become: true
+  become_user: '{{ oracle_db_owner_user_name }}'
+  become_method: sudo
   shell: cp {{ oracle_db_homes[item.oracle_home].path }}/assistants/dbca/templates/General_Purpose.dbc {{ item.dbca_template_file }}
+  args:
+    creates: '{{ item.dbca_template_file }}'
   with_items: oracle_databases
 
 - name: Modifying Oracle Database template file
