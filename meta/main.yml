@@ -5,4 +5,6 @@ dependencies:
   kernel_parameters: '{{ oracle_kernel_parameters }}'
 - role: selinux
   selinux_mode: '{{ oracle_selinux_mode }}'
+- role: pam-limits
+  pam_limits_config: '{{ oracle_limits_config }}'
 - role: oracle-common
