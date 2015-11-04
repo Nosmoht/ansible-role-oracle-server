@@ -1,6 +1,0 @@
----
-- name: Installing required packages
-  yum:
-    name: '{{ item }}'
-    state: present
-  with_items: oracle_packages

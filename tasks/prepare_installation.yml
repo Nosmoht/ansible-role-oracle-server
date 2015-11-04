@@ -1,9 +1,21 @@
 ---
-- include: hostname.yml
-  tags: oracle_ns
+- name: Ensure hostname is resolvable
+  lineinfile:
+    dest: /etc/hosts
+    state: present
+    line: 127.0.0.1 {{ item }}
+  with_items: ansible_hostname
 
-- include: packages.yml
-  tags: oracle_packages
+- name: Ensure packages
+  yum:
+    name: '{{ item }}'
+    state: present
+  with_items: oracle_packages
 
-- include: directories.yml
-  tags: oracle_directories
+- name: Ensure ORACLE_BASE directory
+  file:
+    name: '{{ oracle_db_oracle_base }}'
+    state: directory
+    owner: '{{ oracle_db_owner_user_name }}'
+    group: '{{ oracle_inventory_group_name }}'
+    mode: '0775'
