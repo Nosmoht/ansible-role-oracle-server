@@ -3,8 +3,7 @@
   lineinfile:
     dest: /etc/hosts
     state: present
-    line: 127.0.0.1 {{ item }}
-  with_items: ansible_hostname
+    line: '{{ ansible_default_ipv4.address }} {{ ansible_hostname }} {{ ansible_fqdn }}'
 
 - name: Ensure packages
   yum:
