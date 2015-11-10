@@ -2,8 +2,9 @@
 - name: Ensure hostname is resolvable
   lineinfile:
     dest: /etc/hosts
-    state: present
+    regexp: '^{{ ansible_default_ipv4.address }}'
     line: '{{ ansible_default_ipv4.address }} {{ ansible_hostname }} {{ ansible_fqdn }}'
+    state: present
 
 - name: Ensure packages
   yum:
