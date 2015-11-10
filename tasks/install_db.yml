@@ -1,9 +1,17 @@
 ---
+- include_vars: '{{ oracle_db_home.edition }}-{{ oracle_db_home.version }}-{{ ansible_architecture }}.yml'
+
+- name: Check if Oracle binary exists
+  stat:
+    path: '{{ oracle_db_home.path }}/bin/oracle'
+  register: oracle_db_home_binary
+
 - include: oracle_home.yml
+  when: not oracle_db_home_binary.stat.exists
   tags: oracle_home
 
-- include: netca.yml
-  tags: oracle_netca
+- include: listener.yml
+  tags: oracle_listener
 
 - include: dbca.yml
   tags: oracle_dbca
