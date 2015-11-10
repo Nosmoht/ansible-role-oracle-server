@@ -1,14 +1,23 @@
 ---
+- name: Check if database exists
+  shell: grep -c {{ item.name }} /etc/oratab
+  register: oracle_databases_exists
+  changed_when: false
+  with_items: oracle_databases
+
 - name: Copying DBCA template file
   become: true
   become_user: '{{ oracle_db_owner_user_name }}'
   become_method: sudo
-  shell: cp {{ oracle_db_homes[item.oracle_home].path }}/assistants/dbca/templates/General_Purpose.dbc {{ item.dbca_template_file }}
+  shell: cp {{ oracle_db_home.path }}/assistants/dbca/templates/General_Purpose.dbc {{ item.0.dbca_template_file }}
   args:
-    creates: '{{ item.dbca_template_file }}'
-  with_items: oracle_databases
+    creates: '{{ item.0.dbca_template_file }}'
+  when: item.1.stdout|int == 0
+  with_together:
+  - oracle_databases
+  - oracle_databases_exists.results
 
-- name: Modifying Oracle Database template file
+- name: Ensure Oracle Database template file
   lineinfile:
     dest: '{{ item.0.dbca_template_file }}'
     regexp: ^(\s+)(<option name="{{ item.1.name }}" value=")(.*)("/?>)
@@ -21,30 +30,36 @@
 
 - name: Ensure DBCA template file
   file:
-    dest: '{{ item.dbca_template_file }}'
+    dest: '{{ item.0.dbca_template_file }}'
     owner: '{{ oracle_db_owner_user_name }}'
     group: '{{ oracle_inventory_group_name }}'
     mode: '0700'
     state: file
-  with_items: oracle_databases
+  when: item.1.stdout|int == 0
+  with_together:
+  - oracle_databases
+  - oracle_databases_exists.results
 
 - name: Ensure Oracle Database
   become: true
   become_method: sudo
   become_user: '{{ oracle_db_owner_user_name }}'
-  shell: '{{ oracle_db_homes[item.oracle_home].path }}/bin/dbca -silent -createDatabase
-    -templateName {{ item.dbca_template_file }} -gdbName {{ item.db_name }} -sid {{
-    item.db_name }} -sysPassword {{ item.syspassword }} -systemPassword {{ item.systempassword
-    }} -dbsnmpPassword {{ item.dbsnmppassword }} -emConfiguration LOCAL -storageType
-    FS -datafileJarLocation {{ oracle_db_homes[item.oracle_home].path }}/assistants/dbca/templates -characterset
-    {{ item.characterset }} -obfuscatedPasswords false -sampleSchema false'
-  with_items: oracle_databases
+  shell: '{{ oracle_db_home.path }}/bin/dbca -silent -createDatabase
+    -templateName {{ item.0.dbca_template_file }} -gdbName {{ item.0.name }} -sid {{
+    item.0.name }} -sysPassword {{ item.0.syspassword }} -systemPassword {{ item.0.systempassword
+    }} -dbsnmpPassword {{ item.0.dbsnmppassword }} -emConfiguration LOCAL -storageType
+    FS -datafileJarLocation {{ oracle_db_home.path }}/assistants/dbca/templates -characterset
+    {{ item.0.characterset }} -obfuscatedPasswords false -sampleSchema false'
+  when: item.1.stdout|int == 0
+  with_together:
+  - oracle_databases
+  - oracle_databases_exists.results
   register: oracle_database_installation
   failed_when: oracle_database_installation.stdout.find('100% complete') == -1
 
 - name: Ensure service file
   template:
-    dest: '{{ oracle_service_file_name_prefix }}{{ item.db_name }}{{ oracle_service_file_name_suffix }}'
+    dest: '{{ oracle_service_file_name_prefix }}{{ item.name }}{{ oracle_service_file_name_suffix }}'
     src: '{{ oracle_service_file_template }}'
     owner: root
     group: root
@@ -57,19 +72,19 @@
   when: ansible_distribution_major_version|int == 7 and oracle_database_services.changed
   tags: dbservice
 
-- name: Configure startup of database on system boot
+- name: Ensure startup of database on system boot
   lineinfile:
     dest: /etc/oratab
-    regexp: '^({{ item.db_name }}):({{ oracle_db_homes[item.oracle_home].path }}):N'
-    line: '\1:\2:Y'
-    backrefs: True
+    regexp: '^({{ item.name }}):({{ oracle_db_home.path }}):N'
+    line: '\1:\2:{% if item.enabled | default(true) %}Y{% else %}N{% endif %}'
+    backrefs: true
   with_items: oracle_databases
   tags: dbservice
 
 - name: Ensure Database is running and started on system boot
   service:
-    name: '{{ oracle_service_file_name_prefix }}{{ item.db_name }}{{ oracle_service_file_name_suffix }}'
-    state: running
-    enabled: true
+    name: '{{ oracle_service_file_name_prefix }}{{ item.name }}{{ oracle_service_file_name_suffix }}'
+    state: '{{ item.state | default("running") }}'
+    enabled: '{{ item.enabled | default(true) }}'
   with_items: oracle_databases
   tags: dbservice

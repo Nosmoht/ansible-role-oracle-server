@@ -5,43 +5,43 @@
 # processname: oracle
 # config: /etc/oratab
 # pidfile: /var/run/oracle.pid
- 
+
 # Source function library.
 . /etc/init.d/functions
- 
+
 RETVAL=0
 ORA_OWNER="{{ oracle_db_owner_user_name }}"
-ORA_HOME="{{ oracle_db_homes[item.oracle_home].path }}"
- 
+ORA_HOME="{{ oracle_db_home.path }}"
+
 # See how we were called.
- 
+
 prog="oracle"
- 
+
 start() {
 echo -n $"Starting $prog: "
 su - $ORA_OWNER -c "$ORA_HOME/bin/dbstart $ORA_HOME"
 RETVAL=$?
 echo
 [ $RETVAL -eq 0 ] && touch /var/lock/subsys/dbora
- 
+
 return $RETVAL
 }
- 
+
 stop() {
 echo -n $"Stopping $prog: "
 su - $ORA_OWNER -c "$ORA_HOME/bin/dbshut $ORA_HOME"
 RETVAL=$?
 echo
 [ $RETVAL -eq 0 ] && rm -r /var/lock/subsys/dbora
- 
+
 return $RETVAL
 }
- 
+
 restart() {
 stop
 start
 }
- 
+
 case "$1" in
 start)
 start
@@ -56,5 +56,5 @@ restart
 echo $"Usage: $0 {start|stop|restart}"
 exit 1
 esac
- 
+
 exit $?

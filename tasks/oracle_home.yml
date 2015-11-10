@@ -1,77 +1,90 @@
 ---
-- name: Check if Oracle Inventory file already exists
-  stat:
-    path: '{{ oracle_inventory_file }}'
-  register: oracle_inventory_file_check
-
-- name: Check if ORACLE_HOME already exists
-  shell: grep -c {{ item.path }} {{ oracle_inventory_file }}
-  when: oracle_inventory_file_check.stat.exists
-  register: oracle_existing_db_homes
-  with_items: oracle_db_homes
-  failed_when: oracle_existing_db_homes.rc not in [0, 1]
-  changed_when: false
-
 - name: Ensure unpack directory
   file:
-    name: '{{ item.0.unpack_directory }}'
+    name: '{{ oracle_db_home.unpack_directory }}'
     owner: '{{ oracle_db_owner_user_name }}'
     group: '{{ oracle_inventory_group_name }}'
     mode: '0775'
     state: directory
-  when: item.1.stdout == "0"
-  with_together:
-  - oracle_db_homes
-  - oracle_existing_db_homes.results
 
-- name: Unzip Installation files
+- name: Unzip installation files
   become: true
   become_user: '{{ oracle_db_owner_user_name }}'
   become_method: sudo
-  shell: 'unzip -u -o {{ item.0.installation_files_directory }}/{{ item.1 }} -d {{ item.0.unpack_directory }}'
-  with_subelements:
-  - oracle_db_homes
-  - installation_files
+  shell: 'unzip -u -o {{ oracle_db_home.installation_files_directory }}/{{ item }} -d {{ oracle_db_home.unpack_directory }}'
+  with_items: installation_files
 
-- include: responsefile.yml
+- name: Ensure response file
+  become: true
+  become_user: '{{ oracle_db_owner_user_name }}'
+  become_method: sudo
+  shell: cp {{ oracle_db_home.unpack_directory}}/database/response/db_install.rsp {{ oracle_db_home.response_file }}
+  args:
+    creates: '{{ oracle_db_home.response_file }}'
+
+- name: Ensure parameters in response file
+  lineinfile:
+    dest: '{{ oracle_db_home.response_file }}'
+    regexp: ^({{ item.name }})=
+    line: \1={{ item.value }}
+    backrefs: true
+    state: present
+  with_items:
+  - name: ORACLE_HOME
+    value: '{{ oracle_db_home.path }}'
+  - name: oracle.install.option
+    value: INSTALL_DB_SWONLY
+  - name: UNIX_GROUP_NAME
+    value: '{{ oracle_inventory_group_name }}'
+  - name: INVENTORY_LOCATION
+    value: '{{ oracle_inventory_directory }}'
+  - name: ORACLE_BASE
+    value: '{{ oracle_db_oracle_base }}'
+  - name: oracle.install.db.DBA_GROUP
+    value: '{{ oracle_db_osdba_group_name }}'
+  - name: oracle.install.db.OPER_GROUP
+    value: '{{ oracle_db_osoper_group_name }}'
+  - name: oracle.install.db.BACKUPDBA_GROUP
+    value: '{{ oracle_db_osbackupdba_group_name }}'
+  - name: oracle.install.db.DGDBA_GROUP
+    value: '{{ oracle_db_osdgdba_group_name }}'
+  - name: oracle.install.db.KMDBA_GROUP
+    value: '{{ oracle_db_oskmdba_group_name }}'
+  - name: oracle.installer.autoupdates.option
+    value: SKIP_UPDATES
+  - name: DECLINE_SECURITY_UPDATES
+    value: true
+  - name: oracle.install.db.InstallEdition
+    value: '{{ oracle_db_home.edition }}'
 
 - name: Run Oracle Universal Installer Using a Response File
   become: true
   become_user: '{{ oracle_db_owner_user_name }}'
   become_method: sudo
-  shell: '{{ item.0.unpack_directory }}/database/runInstaller -silent -responseFile {{ item.0.response_file }} -waitforcompletion -force'
-  register: oracle_db_homes_install
-  when: not oracle_inventory_file_check.stat.exists or item.1.stdout == "0"
-  failed_when: oracle_db_homes_install.stdout.find('root.sh') == -1
-  with_together:
-  - oracle_db_homes
-  - oracle_existing_db_homes.results
+  shell: '{{ oracle_db_home.unpack_directory }}/database/runInstaller -silent -responseFile {{ oracle_db_home.response_file }} -waitforcompletion -force'
+  register: oracle_db_home_install
+  failed_when: oracle_db_home_install.stdout.find('root.sh') == -1
 
 - name: Execute orainstRoot.sh as root
   become: true
   become_user: root
   become_method: sudo
   shell: '{{ oracle_inventory_directory }}/orainstRoot.sh'
-  when: item.changed and item.stdout.find('orainstRoot.sh') != -1
-  with_items: oracle_db_homes_install.results
+  when: oracle_db_home_install.stdout.find('orainstRoot.sh') != -1
 
 - name: Execute root.sh as root
   become: true
   become_user: root
   become_method: sudo
-  shell: '{{ item.0.path }}/root.sh'
-  when: item.1.changed and item.1.stdout.find('root.sh') != -1
-  with_together:
-  - oracle_db_homes
-  - oracle_db_homes_install.results
+  shell: '{{ oracle_db_home.path }}/root.sh'
+  when: oracle_db_home_install.stdout.find('root.sh') != -1
 
-- name: Unzip Oracle OPatch
+- name: Ensure Oracle OPatch
   become: true
   become_user: '{{ oracle_db_owner_user_name }}'
   become_method: sudo
-  shell: 'unzip -u -o {{ item.installation_files_directory }}/{{ item.opatch_patch_file }} -d {{ item.path }}'
+  shell: 'unzip -u -o {{ oracle_db_home.installation_files_directory }}/{{ oracle_db_home.opatch_patch_file }} -d {{ oracle_db_home.path }}'
+  when: oracle_db_home_install.changed and oracle_db_home.opatch_patch_file is defined
   register: oracle_opatch_unpack_results
   changed_when: oracle_opatch_unpack_results.stdout.find('inflating') != 1
-  when: item.opatch_patch_file is defined
-  with_items: oracle_db_homes
-  tags: patch
+  tags: oracle_opatch_install

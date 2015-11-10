@@ -51,29 +51,29 @@ Following example will:
 - hosts: dbservers
   vars:
     oracle_app_directory: /app
-    oracle_db_homes:
-    - name: dbhome_1
-      version: 12.1.0
+    oracle_db_home_1:
+      name: dbhome_1
+      version: 12.1.0.2
       edition: EE
       path: '{{ oracle_app_directory }}/oracle/product/12.1.0/dbhome_1'
       installation_files_directory: /share/oracle/12.1.0.2/patches
-      installation_files:
-      - linuxamd64_12102_database_1of2.zip
-      - linuxamd64_12102_database_2of2.zip
       unpack_directory: /share/oracle/12.1.0.2/install
       response_file: /tmp/dbhome_1.rsp
-    - name: dbhome
+    oracle_db_home_2:
+      name: dbhome
       version: 11.2.0.3
       edition: SE
       path: '{{ oracle_app_directory }}/oracle/product/11.2.0/dbhome_1'
       installation_files_directory: /share/oracle/11.2.0/patches
-      installation_files:
-      - p10404530_112030_Linux-x86-64_1of7.zip
-      - p10404530_112030_Linux-x86-64_2of7.zip
       unpack_directory: /share/oracle/11.2.0/install
       response_file: /tmp/dbhome_2.rsp
+  role:
+  - role: oracle-server
+    oracle_db_home: '{{ oracle_db_home_1 }}'
+  - role: oracle-server
+    oracle_db_home: '{{ oracle_db_home_1 }}'  
     oracle_databases:
-    - db_name: ORA12C
+    - name: ORA12C
       oracle_home: dbhome_1
       syspassword: ora12c
       systempassword: ora12c
@@ -81,7 +81,7 @@ Following example will:
       characterset: AL32UTF8
       dbca_template_file: /tmp/ora12c.dbc
       common_attributes: []
-    - db_name: ORA11G
+    - name: ORA11G
       oracle_home: dbhome_2
       syspassword: ora11gr2
       systempassword: ora11gr2
