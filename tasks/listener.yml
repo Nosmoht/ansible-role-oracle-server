@@ -1,5 +1,4 @@
 ---
-
 - name: Ensure listener.ora
   template:
     dest: '{{ oracle_tns_admin }}/listener.ora'
@@ -17,7 +16,7 @@
     name: '{{ item.name }}'
     port: '{{ item.port }}'
     protocol: '{{ item.protocol }}'
-    oracle_home: '{% for home in oracle_db_homes %}{% if home.get("name") == item.oracle_home %}{{ home.path }}{% endif %}{% endfor %}'
+    oracle_home: '{{ oracle_db_home.path }}'
     tns_admin: '{{ oracle_tns_admin }}'
     state: running
   with_items: oracle_listeners
