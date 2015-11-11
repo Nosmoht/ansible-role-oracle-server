@@ -7,4 +7,7 @@ dependencies:
   selinux_mode: '{{ oracle_selinux_mode }}'
 - role: pam-limits
   pam_limits_config: '{{ oracle_limits_config }}'
+- role: avahi
+  avahi_service_state: stopped
+  avahi_service_enabled: false
 - role: oracle-common

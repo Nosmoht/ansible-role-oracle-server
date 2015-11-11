@@ -28,6 +28,7 @@ Not implement yet
 # Requirements
 - Ansible 1.9
 - Ansible roles
+  - [avahi](https://github.com/Nosmoht/ansible-role-avahi.git)
   - [kernel](https://github.com/Nosmoht/ansible-role-kernel.git)
   - [selinux](https://github.com/Nosmoht/ansible-role-selinux.git)
   - [oracle-common](https://github.com/Nosmoht/ansible-role-oracle-common.git)
