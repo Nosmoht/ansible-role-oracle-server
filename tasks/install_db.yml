@@ -14,6 +14,7 @@
   tags: oracle_listener
 
 - include: dbca.yml
+  when: oracle_db_home is defined
   tags: oracle_dbca
 
 - name: Creating environment file
