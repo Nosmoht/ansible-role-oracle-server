@@ -23,6 +23,8 @@ oracle_kernel_parameters:
     value: 4096
   - name: kernel.sem
     value: 250 32000 100 128
+  - name: kernel.panic_on_oops
+    value: 1
   - name: fs.file-max
     value: 6815744
   - name: fs.aio-max-nr
@@ -39,7 +41,7 @@ oracle_kernel_parameters:
     value: 1048576
   - name: vm.nr_hugepages
     value: '{{ oracle_kernel_vm_hugepages }}'
-oracle_limits_config:
+oracle_db_pam_limits_config:
 - filename: 50-oracle.conf
   parameters:
   - domain: '{{ oracle_db_owner_user_name }}'
@@ -74,3 +76,30 @@ oracle_limits_config:
     item: memlock
     type: hard
     value: '{{ oracle_limits_memlock }}'
+oracle_gi_pam_limits_config:
+- filename: 99-grid.conf
+  parameters:
+  - domain: '{{ oracle_gi_owner_user_name }}'
+    type: soft
+    item: nproc
+    value: 16384
+  - domain: '{{ oracle_gi_owner_user_name }}'
+    type: hard
+    item: nproc
+    value: 16384
+  - domain: '{{ oracle_gi_owner_user_name }}'
+    type: soft
+    item: nofile
+    value: 1024
+  - domain: '{{ oracle_gi_owner_user_name }}'
+    type: hard
+    item: nofile
+    value: 65536
+  - domain: '{{ oracle_gi_owner_user_name }}'
+    type: soft
+    item: stack
+    value: 10240
+  - domain: '{{ oracle_gi_owner_user_name }}'
+    type: hard
+    item: stack
+    value: 32768

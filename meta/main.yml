@@ -4,5 +4,11 @@ dependencies:
   kernel_config: '{{ oracle_kernel_config }}'
   kernel_parameters: '{{ oracle_kernel_parameters }}'
 - role: pam-limits
-  pam_limits_config: '{{ oracle_limits_config }}'
+  pam_limits_config: '{{ oracle_db_pam_limits_config }}'
+- role: pam-limits
+  pam_limits_config: '{{ oracle_gi_pam_limits_config }}'
+  when: oracle_gi_homes is defined
+- role: avahi
+  avahi_service_state: stopped
+  avahi_service_enabled: false
 - role: oracle-common
