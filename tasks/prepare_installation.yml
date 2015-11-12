@@ -19,3 +19,7 @@
     owner: '{{ oracle_db_owner_user_name }}'
     group: '{{ oracle_inventory_group_name }}'
     mode: '0775'
+
+- name: Ensure SELinux
+  selinux:
+    state: '{{ oracle_selinux_state }}'
