@@ -7,7 +7,7 @@ oracle_kernel_config:
   value: never
 - option: numa
   value: 'off'
-oracle_selinux_mode: disabled
+oracle_selinux_state: disabled
 oracle_limits_memlock: '{{ (ansible_memtotal_mb * 1024 * 0.9) | round(0, "ceil") | int }}'
 oracle_kernel_shmall: 2097152
 oracle_kernel_shmmax: 1050470400

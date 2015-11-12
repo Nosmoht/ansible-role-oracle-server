@@ -12,7 +12,7 @@
   become_user: '{{ oracle_db_owner_user_name }}'
   become_method: sudo
   shell: 'unzip -u -o {{ oracle_db_home.installation_files_directory }}/{{ item }} -d {{ oracle_db_home.unpack_directory }}'
-  with_items: installation_files
+  with_items: oracle_db_home_installation_files
 
 - name: Ensure response file
   become: true
