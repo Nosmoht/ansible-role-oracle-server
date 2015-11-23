@@ -11,18 +11,8 @@
   tags: oracle_home
 
 - include: listener.yml
+  when: oracle_listeners is defined
   tags: oracle_listener
 
 - include: dbca.yml
-  when: oracle_db_home is defined
   tags: oracle_dbca
-
-- name: Creating environment file
-  template:
-    src: set_env_DB.j2
-    dest: '{{ oracle_db_owner_user_home }}/.set_env_{{ item.name }}'
-    group: '{{ oracle_inventory_group_name }}'
-    owner: '{{ oracle_db_owner_user_name }}'
-    mode: '0664'
-  with_items: oracle_databases
-  tags: oracle_setenv
