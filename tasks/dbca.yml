@@ -6,7 +6,7 @@
   changed_when: false
   with_items: oracle_databases
 
-- name: Copying DBCA template file
+- name: Ensure DBCA template file
   become: true
   become_user: '{{ oracle_db_owner_user_name }}'
   become_method: sudo
@@ -18,7 +18,7 @@
   - oracle_databases
   - oracle_databases_exists.results
 
-- name: Ensure Oracle Database template file
+- name: Ensure DBCA template file content
   lineinfile:
     dest: '{{ item.0.dbca_template_file }}'
     regexp: ^(\s+)(<option name="{{ item.1.name }}" value=")(.*)("/?>)
@@ -83,10 +83,11 @@
   with_items: oracle_databases
   tags: dbservice
 
-- name: Ensure Database is running and started on system boot
+- name: Ensure service
   service:
     name: '{{ oracle_service_file_name_prefix }}{{ item.name }}{{ oracle_service_file_name_suffix }}'
     state: '{{ item.state | default("running") }}'
     enabled: '{{ item.enabled | default(true) }}'
+  when: ansible_distribution_major_version|int > 6 # works only on RHEL 7
   with_items: oracle_databases
   tags: dbservice
