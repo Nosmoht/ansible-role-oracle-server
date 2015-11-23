@@ -50,6 +50,8 @@
     value: '{{ oracle_db_osdgdba_group_name }}'
   - name: oracle.install.db.KMDBA_GROUP
     value: '{{ oracle_db_oskmdba_group_name }}'
+  - name: oracle.install.db.optionalComponents
+    value: '{{ oracle_db_home.optionalComponents | default("") }}'
   - name: oracle.installer.autoupdates.option
     value: SKIP_UPDATES
   - name: DECLINE_SECURITY_UPDATES
