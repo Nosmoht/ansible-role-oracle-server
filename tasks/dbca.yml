@@ -13,7 +13,7 @@
   shell: cp {{ oracle_db_home.path }}/assistants/dbca/templates/General_Purpose.dbc {{ item.0.dbca_template_file }}
   args:
     creates: '{{ item.0.dbca_template_file }}'
-  when: item.1.stdout|int == 0
+  when: item.1.stdout|int == 0 and item.0.install|bool
   with_together:
   - oracle_databases
   - oracle_databases_exists.results
@@ -25,8 +25,9 @@
     line: \1\2{{ item.1.value }}\4
     backrefs: true
     state: present
+  when: item.0.install|bool
   with_subelements:
-  - oracle_databases
+  - '{{ oracle_databases | default(dict()) }}'
   - common_attributes
 
 - name: Ensure DBCA template file
@@ -36,7 +37,7 @@
     group: '{{ oracle_inventory_group_name }}'
     mode: '0700'
     state: file
-  when: item.1.stdout|int == 0
+  when: item.1.stdout|int == 0 and item.0.install|bool
   with_together:
   - oracle_databases
   - oracle_databases_exists.results
@@ -51,7 +52,7 @@
     }} -dbsnmpPassword {{ item.0.dbsnmppassword }} -emConfiguration LOCAL -storageType
     FS -datafileJarLocation {{ oracle_db_home.path }}/assistants/dbca/templates -characterset
     {{ item.0.characterset }} -obfuscatedPasswords false -sampleSchema false'
-  when: item.1.stdout|int == 0
+  when: item.1.stdout|int == 0 and item.0.install|bool
   with_together:
   - oracle_databases
   - oracle_databases_exists.results
