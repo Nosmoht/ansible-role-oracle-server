@@ -9,8 +9,8 @@ Type=forking
 User={{ oracle_db_owner_user_name }}
 TimeoutSec=600
 Environment="ORACLE_BASE={{ oracle_db_oracle_base }} ORACLE_HOME={{ oracle_db_home.path }} ORACLE_SID={{ item.name }}"
-ExecStart={{ oracle_db_homes[item.oracle_home].path }}/bin/dbstart {{ oracle_db_home.path }}
-ExecStop={{ oracle_db_homes[item.oracle_home].path }}/bin/dbshut {{ oracle_db_home.path }}
+ExecStart={{ oracle_db_home.path }}/bin/dbstart {{ oracle_db_home.path }}
+ExecStop={{ oracle_db_home.path }}/bin/dbshut {{ oracle_db_home.path }}
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=oracle
