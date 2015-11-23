@@ -67,38 +67,43 @@ Following example will:
       installation_files_directory: /share/oracle/11.2.0/patches
       unpack_directory: /share/oracle/11.2.0/install
       response_file: /tmp/dbhome_2.rsp
+      oracle_listeners:
+      - name: LISTENER
+        protocol: TCP
+        port: 1521
+        oracle_home: dbhome_1
   role:
   - role: oracle-server
     oracle_db_home: '{{ oracle_db_home_1 }}'
-  - role: oracle-server
-    oracle_db_home: '{{ oracle_db_home_1 }}'  
     oracle_databases:
     - name: ORA12C
       oracle_home: dbhome_1
+      install: true
       syspassword: ora12c
       systempassword: ora12c
       dbsnmppassword: ora12c
       characterset: AL32UTF8
       dbca_template_file: /tmp/ora12c.dbc
       common_attributes: []
+  - role: oracle-server
+    oracle_db_home: '{{ oracle_db_home_1 }}'
+    oracle_databases:
     - name: ORA11G
       oracle_home: dbhome_2
+      install: true
       syspassword: ora11gr2
       systempassword: ora11gr2
       dbsnmppassword: ora11gr2
       characterset: AL32UTF8
       dbca_template_file: /tmp/ora11g.dbc
-      common_attributes: []          
-    oracle_listeners:
-    - name: LISTENER
-      protocol: TCP
-      port: 1521
-      oracle_home: dbhome_1
-  roles:
-  - role: oracle-server
+      common_attributes: []
+    - name: CLONEDB
+      oracle_home: db_home2
+      install: false
+      common_attributes: []
 ```
 
-# Author Information
+# Author
 
 [Thomas Krahn](mailto:ntbc@gmx.net)
 
