@@ -4,10 +4,12 @@ export ORACLE_BASE={{ oracle_db_oracle_base }}
 export ORACLE_HOME={{ oracle_db_home.path }}
 
 export ORACLE_SID={{ item.sid | default(item.name) }}
+export ORACLE_UNQNAME={{ item.unqname | default(item.name) }}
+export ORACLE_HOSTNAME=${HOSTNAME}
 export TNS_ADMIN={{ oracle_tns_admin }}
 export PATH=${ORACLE_HOME}/bin:${ORACLE_HOME}/OPatch:${PATH}
 export LD_LIBRARY_PATH=${ORACLE_HOME}/lib:${ORACLE_HOME}/lib32
-export NLS_DATE_FORMAT="YYYY-MM-DD HH24:MI:SS"
+export NLS_DATE_FORMAT="{{ item.nls_date_format | default("YYYY-MM-DD HH24:MI:SS") }}"
 
 alias esid='echo ${ORACLE_SID}'
 alias sql='sqlplus / as sysdba'
