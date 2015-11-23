@@ -1,7 +1,8 @@
 ---
 - name: Check if database exists
-  shell: grep -c {{ item.name }} /etc/oratab
+  shell: 'grep -c {{ item.name }} /etc/oratab'
   register: oracle_databases_exists
+  failed_when: oracle_databases_exists.rc not in [0, 1]
   changed_when: false
   with_items: oracle_databases
 
