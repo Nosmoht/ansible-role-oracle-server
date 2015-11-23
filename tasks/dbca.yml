@@ -59,6 +59,16 @@
   register: oracle_database_installation
   failed_when: oracle_database_installation.stdout.find('100% complete') == -1
 
+- name: Ensure environment file
+  template:
+    src: set_env_DB.j2
+    dest: '{{ oracle_db_owner_user_home }}/.set_env_{{ item.name }}'
+    group: '{{ oracle_inventory_group_name }}'
+    owner: '{{ oracle_db_owner_user_name }}'
+    mode: '0664'
+  with_items: oracle_databases
+  tags: oracle_setenv
+
 - name: Ensure service file
   template:
     dest: '{{ oracle_service_file_name_prefix }}{{ item.name }}{{ oracle_service_file_name_suffix }}'
